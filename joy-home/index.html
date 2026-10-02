@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Joy — Command Center</title>
+  <base href="/joy-home/">
+  <style>
+    html, body { height: 100%; margin: 0; background: #06060c; color: #fff; }
+    #joyBootStatus {
+      position: fixed; inset: 0; z-index: 99999; display: grid; place-items: center;
+      padding: 24px; text-align: center; background: #06060c; color: #c4b5fd;
+      font: 600 1.05rem/1.5 system-ui, -apple-system, sans-serif;
+    }
+    #joyBootStatus.joy-boot-error { color: #fecaca; white-space: pre-wrap; max-width: 28rem; }
+    .joy-app { min-height: 100vh; min-height: 100svh; display: flex; flex-direction: column; }
+  </style>
+  <link rel="stylesheet" href="/joy-home/styles.css?v=20260729-record-hide">
+  <link rel="stylesheet" href="/joy-home/shell.css">
+  <link rel="stylesheet" href="/joy-home/brief.css?v=20260710-voice-panel">
+</head>
+<body class="mode-desk joy-shell nav-home">
+  <div id="joyBootStatus" aria-live="polite">Loading Joy Home...</div>
+  <div id="joyApp" class="joy-app">
+    <header class="joy-topbar">
+      <div class="joy-topbar-brand">JOY</div>
+      <div class="joy-topbar-status" aria-label="Connection status">
+        <span class="joy-online-dot" id="joyOnlineDot"></span>
+        <span id="joyOnlineLabel">Online</span>
+      </div>
+      <div class="joy-topbar-spacer"></div>
+      <button type="button" id="diagnosticsButton" class="joy-topbar-diagnostics" title="Diagnostics">Diagnostics</button>
+      <div class="joy-topbar-clock" aria-live="polite">
+        <strong id="shellClock">--:--</strong>
+        <span id="shellDate">---</span>
+      </div>
+    </header>
+
+    <div class="joy-layout">
+      <nav class="joy-rail" id="joyRail" aria-label="Main navigation"></nav>
+
+      <div class="joy-main">
+        <div id="joyHomePane" class="joy-home-pane">
+          <div class="joy-home-surface">
+            <div class="joy-stage-full">
+              <main class="stage state-ambient" id="stage">
+                <div id="wakeModeDot" class="wake-mode-dot" aria-hidden="true"></div>
+                <canvas class="mote-canvas" id="moteCanvas" aria-hidden="true"></canvas>
+                <div class="particles" id="particles" aria-hidden="true"></div>
+
+                <div class="idle-city" id="idleCity" aria-hidden="true">
+                  <div class="city-skyline" id="citySkyline"></div>
+                  <div class="city-vehicles" id="cityVehicles"></div>
+                  <div class="city-rain" id="cityRain"></div>
+                  <div class="city-fog" id="cityFog"></div>
+                  <div class="idle-overlay">
+                    <div class="idle-time" id="idleTime">--:--</div>
+                    <div class="idle-date" id="idleDate">---</div>
+                    <div class="idle-wake">Hello</div>
+                  </div>
+                </div>
+
+                <section class="hud weather joy-legacy-hud" aria-label="Weather">
+                  <strong id="weatherTemp">--°F</strong>
+                  <span id="weatherText">Loading weather...</span>
+                </section>
+                <section class="hud clock joy-legacy-hud" aria-label="Current time">
+                  <strong id="clock">--:--</strong>
+                  <span id="date">Loading current date...</span>
+                </section>
+                <section class="hud event joy-legacy-hud" aria-label="Next event">
+                  <strong>Next up</strong>
+                  <span id="nextEvent">Loading calendar...</span>
+                </section>
+                <section class="hud presence joy-legacy-hud" aria-label="Joy status">
+                  <span class="dot" aria-hidden="true"></span>
+                  <span id="presenceText">Joy is here</span>
+                  <div class="presence-controls">
+                    <button type="button" id="presenceVoiceBtn" class="presence-toggle active" title="Toggle voice">VOICE</button>
+                    <button type="button" id="presenceMicBtn" class="presence-toggle active" title="Toggle mic">MIC</button>
+                    <button type="button" id="presenceWakeBtn" class="presence-toggle" title="Toggle wake word">WAKE</button>
+                  </div>
+                </section>
+
+                <section class="centerpiece" aria-label="Joy orb">
+                  <div class="orb-wrap" id="orb" role="button" tabindex="0" aria-label="Toggle listening">
+                    <div class="processing-ring" id="processingRing"></div>
+                    <div class="orb-aura"></div>
+                    <div class="glow outer"></div>
+                    <canvas class="orb-3d-canvas" id="joyOrb3d" aria-hidden="true"></canvas>
+                    <div class="ring" style="--ring-inset: -8%; --ring-alpha: 0.2; --ring-angle: 14deg; --ring-speed: 18s; --ring-delay: -2s;"></div>
+                    <div class="ring" style="--ring-inset: 2%; --ring-alpha: 0.28; --ring-angle: -22deg; --ring-speed: 14s; --ring-delay: -6s;"></div>
+                    <div class="ring" style="--ring-inset: 10%; --ring-alpha: 0.18; --ring-angle: 48deg; --ring-speed: 22s; --ring-delay: -9s;"></div>
+                    <div class="ring" style="--ring-inset: 18%; --ring-alpha: 0.24; --ring-angle: -62deg; --ring-speed: 16s; --ring-delay: -4s;"></div>
+                    <div class="trail"></div>
+                    <div class="sweep"></div>
+                    <div class="scan"></div>
+                    <div class="ripple"></div>
+                    <div class="ripple"></div>
+                    <div class="orb-shell"></div>
+                    <div class="globe"></div>
+                    <div class="sparks" aria-hidden="true" id="sparks"></div>
+                    <div class="orb-label" aria-live="polite">
+                      <span class="state-title" id="stateTitle">Joy</span>
+                      <span class="transcript" id="transcript">I'm here to help. Just ask.</span><span class="caret"></span>
+                    </div>
+                    <div class="activity-pill" id="activityPill"><span class="spin-dot"></span><span class="pill-text" id="pillText"></span></div>
+                    <div class="mic-indicator" id="micIndicator">● Live</div>
+                  </div>
+                  <div class="waveform" aria-hidden="true" id="waveform"></div>
+                </section>
+
+                <section class="approval-panel" id="approvalPanel" aria-label="Approval queue">
+                  <div class="approval-header">
+                    <span class="approval-title">Pending Approvals</span>
+                    <button type="button" id="approvalClose" class="approval-close" aria-label="Close approvals">x</button>
+                  </div>
+                  <div class="approval-list" id="approvalList"></div>
+                </section>
+
+                <aside class="joy-diagnostics" id="joyDiagnostics" aria-label="Joy diagnostics" hidden>
+                  <div class="joy-diagnostics-head"><span>Joy readiness</span><button type="button" id="joyDiagnosticsClose">×</button></div>
+                  <div id="joyDiagnosticsBody"></div>
+                </aside>
+
+                <section class="response-card" id="response-card" aria-live="polite">
+                  <div class="eyebrow">Joy</div>
+                  <p id="response-text">I'm here. What would you like to look at first?</p>
+                </section>
+
+                <div id="realtime-conversation" class="realtime-log">
+                  <div class="conversation-inner" id="conversation-inner"></div>
+                </div>
+
+                <aside class="task-panel joy-legacy-task-panel" id="taskPanel" hidden>
+                  <div class="task-panel-header">
+                    <h3>Live Tasks</h3>
+                    <button type="button" id="taskRefreshBtn" class="task-refresh" title="Refresh">Refresh</button>
+                  </div>
+                  <div class="task-list" id="taskList"></div>
+                </aside>
+
+                <section class="dashboard-panel" aria-label="Dashboard">
+                  <div class="eyebrow">State of Joy</div>
+                  <div class="dashboard-grid" id="dashboardGrid"></div>
+                  <div class="command-book" id="commandBook" aria-label="Voice command book"></div>
+                </section>
+
+                <nav class="controls joy-home-controls" aria-label="Joy Home controls">
+                  <button type="button" id="dashboardButton">Dashboard</button>
+                  <button type="button" id="listenButton" class="primary-action">Talk to Joy</button>
+                  <button type="button" id="realtimeButton">Live voice</button>
+                  <button type="button" id="idleButton" title="Toggle idle screen" aria-pressed="false">Idle</button>
+                  <button type="button" id="settingsButton" class="minimal" title="Settings">Settings</button>
+                  <button type="button" id="ambientButton" data-state="ambient" style="display:none" aria-hidden="true"></button>
+                  <button type="button" id="fullscreenButton" style="display:none" aria-hidden="true"></button>
+                </nav>
+              </main>
+            </div>
+
+            <section class="home-transcript-panel" aria-live="polite">
+              <div class="ht-turn ht-you" id="htTurnYou" hidden>
+                <span class="ht-label">You</span>
+                <p class="ht-text" id="htTextYou"></p>
+              </div>
+              <div class="ht-turn ht-joy" id="htTurnJoy" hidden>
+                <span class="ht-label">Joy</span>
+                <p class="ht-text" id="htTextJoy"></p>
+              </div>
+            </section>
+
+            <aside id="joyBrief" class="joy-brief" aria-label="Daily brief"></aside>
+
+            <footer class="joy-home-compose" aria-label="Ask Joy from Home">
+              <div id="homeComposeStatus" class="joy-home-compose-status" data-state="ready">Ready</div>
+              <div class="joy-home-compose-row">
+                <textarea id="homeChatInput" class="joy-compose-input" rows="1" placeholder="Ask Joy what matters today..."></textarea>
+                <div class="joy-compose-actions">
+                  <button type="button" id="homeMicBtn" class="joy-compose-mic joy-icon-btn" title="Talk to Joy live" aria-label="Start live voice with Joy">
+                    <span class="joy-control-icon joy-control-icon-mic" aria-hidden="true"></span>
+                    <span class="joy-sr-only">Start listening</span>
+                  </button>
+                  <button type="button" id="homeChatSend" class="joy-compose-send joy-icon-btn" title="Send" aria-label="Send message">
+                    <span class="joy-control-icon joy-control-icon-send" aria-hidden="true"></span>
+                    <span class="joy-sr-only">Send message</span>
+                  </button>
+                  <button type="button" id="homeChatStop" class="joy-compose-stop joy-icon-btn" title="Stop" aria-label="Stop current run" hidden>
+                    <span class="joy-control-icon joy-control-icon-stop" aria-hidden="true"></span>
+                    <span class="joy-sr-only">Stop current run</span>
+                  </button>
+                </div>
+              </div>
+            </footer>
+          </div>
+        </div>
+
+        <div id="joyTextPane" class="joy-text-pane hidden" aria-hidden="true">
+          <div class="oc-dash">
+            <aside class="oc-rail" aria-label="Chat sessions">
+              <div class="oc-rail-head">
+                <span class="oc-rail-title">Sessions</span>
+                <button type="button" class="joy-session-new" id="ocNewSessionSide" title="New session">+</button>
+              </div>
+              <ul id="ocSessionList" class="oc-session-list"></ul>
+            </aside>
+            <div class="oc-main joy-text-main">
+              <header class="joy-chat-bar" aria-label="Chat settings">
+                <div class="joy-chat-bar-row">
+                  <select id="textModelSelect" class="joy-chat-select" aria-label="Model"></select>
+                  <select id="textThinkingSelect" class="joy-chat-select joy-chat-select-sm" aria-label="Thinking"></select>
+                  <select id="ocSessionSelect" class="joy-chat-select joy-chat-select-grow oc-session-select-mobile" aria-label="Session"></select>
+                  <span id="ocRunBadge" class="oc-badge oc-badge-run">Ready</span>
+                  <button type="button" id="ocAbortBtn" class="oc-btn oc-btn-danger oc-btn-sm" hidden>Stop</button>
+                  <button type="button" id="ocRefreshBtn" class="oc-btn oc-btn-ghost oc-btn-sm" title="Refresh">Refresh</button>
+                  <button type="button" id="ocNewSession" class="oc-btn oc-btn-ghost oc-btn-sm" title="New session">+</button>
+                </div>
+                <div class="joy-chat-bar-meta">
+                  <span id="ocAgentLabel" class="oc-pill oc-pill-sm">Joy (main)</span>
+                  <span id="ocModelBadge" class="oc-model-badge" hidden></span>
+                  <span id="ocUsageBadge" class="oc-badge oc-badge-sm" title="Context usage">Usage</span>
+                  <span id="ocThinkingBadge" class="oc-badge oc-badge-sm oc-badge-thinking">Think</span>
+                  <span id="ocToolsBadge" class="oc-badge oc-badge-sm oc-badge-tools">Tools</span>
+                  <span id="ocPatchHint" class="oc-patch-hint" hidden></span>
+                  <button type="button" id="ocScopeApproveBtn" class="oc-btn oc-btn-ghost oc-scope-approve oc-btn-sm" hidden>Approve scope</button>
+                </div>
+                <div id="ocLiveStrip" class="oc-live-strip oc-live-strip-compact" hidden>
+                  <span class="oc-live-label">Live</span>
+                  <span id="ocLiveThinking" class="oc-live-text"></span>
+                  <span id="ocLiveTool" class="oc-live-tool"></span>
+                </div>
+              </header>
+
+              <div id="textChatThread" class="text-chat-thread joy-text-thread" role="log" aria-live="polite"></div>
+
+              <footer class="joy-unified-compose" aria-label="Message Joy">
+                <textarea id="textChatInput" class="joy-compose-input" rows="1" placeholder="Type a command or ask Joy to do anything..."></textarea>
+                <div class="joy-compose-actions">
+                  <button type="button" id="textPaneMicBtn" class="joy-compose-mic" title="Listen" aria-label="Start listening">Mic</button>
+                  <button type="button" id="textChatSend" class="joy-compose-send" title="Send" aria-label="Send message">Send</button>
+                </div>
+              </footer>
+            </div>
+          </div>
+        </div>
+
+        <div id="joyFeaturePane" class="joy-feature-pane hidden" aria-hidden="true">
+          <iframe id="mcEmbedFrame" title="Mission Control panel" src="about:blank"></iframe>
+        </div>
+
+        <section id="joyEducationPane" class="joy-education-pane hidden" aria-hidden="true" aria-labelledby="atlasEducationTitle">
+          <div class="atlas-education">
+            <header class="atlas-head">
+              <div>
+                <p class="atlas-kicker">Atlas Education</p>
+                <h1 id="atlasEducationTitle">School cockpit</h1>
+                <p>Courses, study artifacts, deadlines, and Atlas-only continuation — without merging Atlas into Main Joy.</p>
+              </div>
+              <button type="button" id="atlasEducationRefresh" class="joy-control-refresh">Refresh</button>
+            </header>
+            <div id="atlasEducationStatus" class="joy-control-status" role="status" aria-live="polite">Loading…</div>
+            <div id="atlasEducationRoot" aria-live="polite"></div>
+          </div>
+        </section>
+
+        <section id="joyControlPane" class="joy-control-pane hidden" aria-hidden="true" aria-labelledby="joyControlTitle">
+          <div class="joy-control-overview">
+            <header class="joy-control-head">
+              <div>
+                <p class="joy-control-kicker">Mission Control</p>
+                <h1 id="joyControlTitle">Control overview</h1>
+                <p id="joyControlSubtitle">Live local status from Joy Home APIs.</p>
+              </div>
+              <button type="button" id="joyControlRefresh" class="joy-control-refresh">Refresh</button>
+            </header>
+            <div id="joyControlStatus" class="joy-control-status" role="status" aria-live="polite">Loading…</div>
+            <div id="joyControlGrid" class="joy-control-grid" aria-live="polite"></div>
+          </div>
+        </section>
+
+        <div id="joyActionsPane" class="joy-actions-pane hidden" aria-hidden="true">
+          <aside class="joy-actions-capabilities" id="capabilitiesRoot" aria-label="OpenClaw capabilities"></aside>
+          <section class="joy-actions-feed-wrap" aria-label="Live activity">
+            <h2>Live activity</h2>
+            <div class="joy-actions-feed" id="actionsFeed"></div>
+          </section>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/joy-home/shell.js?v=20260715-system-map-open-target" defer></script>
+  <script src="/joy-home/text-chat.js?v=20260710-voice-reliable" defer></script>
+  <script src="/joy-home/orb-fx.js?v=20260710-orb-alive" defer></script>
+  <script src="/joy-home/app.js?v=20260728-realtime-routing-2" defer></script>
+  <script src="/joy-home/brief.js?v=20260710-voice-panel" defer></script>
+<div style="position:fixed;bottom:0;left:0;right:0;z-index:9999;background:#271c43;color:white;text-align:center;font:12px system-ui;padding:4px">Local release subset · sample data is labeled · AI bridge and voice unavailable until configured</div><script>document.addEventListener("DOMContentLoaded",()=>{for(const id of ["homeMicBtn","textPaneMicBtn","ocNewSession","ocNewSessionSide","textModelSelect","textThinkingSelect"]){const e=document.getElementById(id);if(e){e.disabled=true;e.title="Unavailable in local release subset";}}});</script></body>
+</html>

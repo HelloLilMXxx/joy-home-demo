@@ -1,0 +1,1749 @@
+/* Joy Home calm theme + daily brief layout. Loaded after shell.css; desk mode only.
+   Palette lock: warm dark neutrals, one accent (desaturated teal), amber/red reserved
+   for status. Radius system: 12px. No glow, minimal blur. */
+
+:root {
+  --jb-bg: #101114;
+  --jb-surface: #17181d;
+  --jb-surface-2: #1d1f25;
+  --jb-border: rgba(255, 255, 255, 0.07);
+  --jb-text: #e8e6e1;
+  --jb-muted: #a09e97;
+  --jb-accent: #6fb3a8;
+  --jb-accent-strong: #8ccabf;
+  --jb-ok: #7fb586;
+  --jb-warn: #d9a862;
+  --jb-fail: #de7f72;
+  --jb-radius: 12px;
+}
+
+.joy-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* --- Shell calm-down (both modes) --- */
+body.joy-shell {
+  background: var(--jb-bg);
+}
+.joy-topbar {
+  border-bottom: 1px solid var(--jb-border);
+  background: var(--jb-bg);
+}
+body.mode-desk .joy-home-pane {
+  background: var(--jb-bg);
+}
+body.mode-desk .joy-rail .joy-rail-btn.active {
+  border-color: rgba(111, 179, 168, 0.35);
+  background: rgba(111, 179, 168, 0.1);
+  color: var(--jb-accent-strong);
+}
+
+/* --- Desk mode: brief supports the orb stage --- */
+body.mode-desk .joy-home-surface {
+  --home-pad: clamp(16px, 2vw, 28px);
+  --home-brief-w: clamp(292px, 24vw, 352px);
+  --home-transcript-w: clamp(280px, 27vw, 410px);
+  --home-composer-w: clamp(390px, 38vw, 500px);
+  --home-orb-stage-w: calc(100% - var(--home-brief-w) - (var(--home-pad) * 1.5));
+  position: relative;
+  display: block;
+  min-height: 0;
+}
+
+body.mode-desk.nav-home .joy-stage-full {
+  display: block;
+  position: absolute;
+  inset: 0;
+}
+
+/* Normal Home layout lock:
+   Keep legacy panels in the DOM for app.js compatibility, but never let them
+   bleed into the daily-use Home surface unless command mode is explicitly open. */
+body.mode-desk.nav-home:not(.joy-show-commands) .dashboard-panel,
+body.mode-desk.nav-home:not(.joy-show-commands) .command-book,
+body.mode-desk.nav-home:not(.joy-show-commands) .joy-home-controls,
+body.mode-desk.nav-home:not(.joy-show-commands) .joy-legacy-hud,
+body.mode-desk.nav-home:not(.joy-show-commands) .joy-legacy-task-panel,
+body.mode-desk.nav-home:not(.joy-show-commands) .response-card,
+body.mode-desk.nav-home:not(.joy-show-commands) .realtime-log,
+body.mode-desk.nav-home:not(.joy-show-commands) .approval-panel:not(.open) {
+  display: none !important;
+}
+
+.joy-brief {
+  display: none;
+}
+body.mode-desk.nav-home .joy-brief {
+  display: block;
+  position: absolute;
+  z-index: 7;
+  top: calc(var(--home-pad) - 4px);
+  right: var(--home-pad);
+  bottom: calc(150px + env(safe-area-inset-bottom));
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 6px 2px 18px 20px;
+  max-width: none;
+  width: var(--home-brief-w);
+  margin: 0;
+  box-sizing: border-box;
+  color: var(--jb-text);
+  font: 400 0.95rem/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+  border: 0;
+  border-left: 1px solid rgba(255, 255, 255, 0.055);
+  border-radius: 0;
+  background: linear-gradient(90deg, rgba(16, 17, 20, 0), rgba(16, 17, 20, 0.5) 28%, rgba(16, 17, 20, 0.68));
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  scrollbar-width: none;
+}
+body.mode-desk.nav-home .joy-brief::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+body.mode-room .joy-brief {
+  display: none !important;
+}
+
+/* Header */
+.jb-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: baseline;
+  gap: 2px;
+  margin: 2px 0 16px;
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+.jb-head h1 {
+  margin: 0;
+  font-size: clamp(1rem, 1.16vw, 1.18rem);
+  font-weight: 620;
+  letter-spacing: -0.01em;
+  color: var(--jb-text);
+}
+.jb-date {
+  margin: 2px 0 0;
+  color: var(--jb-muted);
+  font-size: 0.78rem;
+}
+.jb-fresh {
+  color: var(--jb-muted);
+  font-size: 0.72rem;
+  white-space: nowrap;
+}
+
+/* Brief sections: line-based, not card-based. */
+.jb-card {
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.045);
+  border-radius: 0;
+  padding: 0 0 13px;
+  margin-bottom: 13px;
+}
+.jb-card h2 {
+  margin: 0 0 10px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--jb-muted);
+  letter-spacing: 0.01em;
+}
+.jb-empty,
+.jb-unavail,
+.jb-meta-note {
+  margin: 0;
+  color: var(--jb-muted);
+  font-size: 0.9rem;
+}
+.jb-meta-note {
+  margin-top: 8px;
+  font-size: 0.78rem;
+}
+
+/* Now */
+.jb-now {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+  gap: 10px;
+}
+.jb-now h2 {
+  grid-column: auto;
+}
+.jb-now-event {
+  display: grid;
+  gap: 4px;
+}
+.jb-now-lead {
+  color: var(--jb-accent-strong);
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+.jb-now-event strong {
+  font-size: 1.18rem;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  line-height: 1.22;
+}
+.jb-now-time {
+  color: var(--jb-muted);
+  font-size: 0.88rem;
+}
+.jb-now-weather {
+  text-align: left;
+  font-size: 0.9rem;
+  color: var(--jb-text);
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.jb-now-weather span {
+  color: var(--jb-muted);
+  font-size: 0.78rem;
+}
+
+/* Attention */
+.jb-attn {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+  padding: 10px 0;
+  border-radius: 0;
+  background: transparent;
+  border: 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.055);
+  margin-bottom: 0;
+}
+.jb-attn:last-child {
+  margin-bottom: 0;
+}
+.jb-attn[data-command] {
+  cursor: pointer;
+}
+.jb-attn[data-command]:hover {
+  color: var(--jb-accent-strong);
+}
+.jb-attn-body {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+.jb-attn-body strong {
+  font-size: 0.93rem;
+  font-weight: 600;
+}
+.jb-attn-body span {
+  color: var(--jb-muted);
+  font-size: 0.82rem;
+}
+.jb-attn-approval {
+  padding-left: 12px;
+  border-left: 2px solid var(--jb-warn);
+}
+.jb-attn-failure {
+  padding-left: 12px;
+  border-left: 2px solid var(--jb-fail);
+}
+.jb-attn-actions {
+  display: flex;
+  gap: 8px;
+}
+.jb-btn {
+  font: 600 0.82rem/1 inherit;
+  min-width: 0;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--jb-border);
+  background: rgba(255, 255, 255, 0.035);
+  color: var(--jb-text);
+  cursor: pointer;
+}
+.jb-btn:active {
+  transform: translateY(1px);
+}
+.jb-approve {
+  background: rgba(111, 179, 168, 0.16);
+  border-color: rgba(111, 179, 168, 0.4);
+  color: var(--jb-accent-strong);
+}
+.jb-reject:hover {
+  border-color: rgba(222, 127, 114, 0.4);
+  color: var(--jb-fail);
+}
+.jb-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.jb-attn-status {
+  width: 100%;
+  font-size: 0.8rem;
+  color: var(--jb-muted);
+}
+.jb-attn-status[data-state="done"] {
+  color: var(--jb-ok);
+}
+.jb-attn-status[data-state="failed"] {
+  color: var(--jb-fail);
+}
+
+/* Today */
+.jb-events {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0;
+}
+.jb-events li {
+  display: grid;
+  grid-template-columns: 58px minmax(0, 1fr);
+  gap: 12px;
+  align-items: baseline;
+  padding: 7px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.055);
+}
+.jb-events li.jb-past {
+  opacity: 0.45;
+}
+.jb-event-time {
+  color: var(--jb-muted);
+  font-size: 0.78rem;
+  min-width: 0;
+  font-variant-numeric: tabular-nums;
+}
+.jb-event-title {
+  font-size: 0.93rem;
+}
+
+/* Quick actions */
+.jb-qa-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0;
+}
+.jb-qa {
+  font: 500 0.82rem/1.25 inherit;
+  text-align: left;
+  min-width: 0;
+  padding: 8px 0;
+  border-radius: 0;
+  border: 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.055);
+  background: transparent;
+  color: var(--jb-text);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.jb-qa:hover {
+  color: var(--jb-accent-strong);
+}
+.jb-qa:active {
+  transform: translateY(1px);
+}
+.jb-qa-tag {
+  font-size: 0.68rem;
+  color: var(--jb-warn);
+  border: 1px solid rgba(217, 168, 98, 0.35);
+  border-radius: 999px;
+  padding: 2px 7px;
+}
+
+/* Skeleton while cached state loads */
+.jb-skeleton div {
+  height: 88px;
+  border-radius: var(--jb-radius);
+  background: var(--jb-surface);
+  border: 1px solid var(--jb-border);
+  margin-bottom: 14px;
+}
+
+/* Home keeps the orb first, with a compact prompt dock for reliable text fallback. */
+body.mode-desk.nav-home .joy-home-compose {
+  display: grid !important;
+}
+
+/* Composer: anchored Home command line */
+body.mode-desk.nav-home .joy-home-compose {
+  position: fixed;
+  left: calc(var(--joy-rail-w) + (var(--home-orb-stage-w) / 2));
+  right: auto;
+  bottom: calc(18px + env(safe-area-inset-bottom));
+  z-index: 28;
+  transform: translateX(-50%);
+  width: min(520px, calc(var(--home-orb-stage-w) - (var(--home-pad) * 2)));
+  min-width: 0;
+  max-width: calc(100vw - 40px);
+  margin: 0;
+  padding: 6px;
+  border: 1px solid var(--jb-border);
+  border-radius: 14px;
+  background: rgba(12, 13, 17, 0.82);
+  box-shadow: 0 14px 46px rgba(0, 0, 0, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(16px) saturate(1.08);
+  -webkit-backdrop-filter: blur(16px) saturate(1.08);
+  box-sizing: border-box;
+}
+body.mode-desk.nav-home .joy-home-compose-status {
+  min-height: 12px;
+  margin: 0 2px 4px;
+  font-size: 0.68rem;
+  line-height: 1;
+}
+body.mode-desk.nav-home .joy-home-compose-status[data-state="ready"] {
+  display: none;
+}
+body.mode-desk.nav-home .joy-home-compose-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 7px;
+  align-items: center;
+}
+body.mode-desk.nav-home .joy-compose-input {
+  min-height: 36px;
+  padding: 8px 12px;
+  background: rgba(23, 24, 29, 0.82);
+  border: 1px solid var(--jb-border);
+  border-radius: 10px;
+  color: var(--jb-text);
+  font-size: 0.86rem;
+  line-height: 1.25;
+}
+body.mode-desk.nav-home .joy-compose-actions {
+  display: flex;
+  gap: 7px;
+  align-items: center;
+}
+body.mode-desk.nav-home .joy-compose-actions button {
+  width: 36px;
+  min-width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  padding: 0;
+  display: inline-grid;
+  place-items: center;
+  position: relative;
+  transition: transform 160ms ease, border-color 180ms ease, background 180ms ease, color 180ms ease;
+}
+body.mode-desk.nav-home .joy-compose-actions button:hover {
+  transform: translateY(-1px);
+}
+body.mode-desk.nav-home .joy-compose-actions button[hidden] {
+  display: none !important;
+}
+body.mode-desk.nav-home .joy-compose-input:focus {
+  border-color: rgba(111, 179, 168, 0.45);
+  outline: none;
+}
+body.mode-desk.nav-home .joy-compose-send {
+  background: rgba(111, 179, 168, 0.2);
+  border: 1px solid rgba(111, 179, 168, 0.45);
+  color: var(--jb-accent-strong);
+}
+body.mode-desk.nav-home .joy-compose-mic {
+  background: var(--jb-surface);
+  border: 1px solid var(--jb-border);
+  color: var(--jb-muted);
+}
+body.mode-desk.nav-home .joy-compose-mic:hover {
+  color: var(--jb-accent-strong);
+  border-color: rgba(111, 179, 168, 0.35);
+}
+body.mode-desk.nav-home .joy-compose-stop {
+  background: rgba(222, 127, 114, 0.12);
+  border: 1px solid rgba(222, 127, 114, 0.32);
+  color: var(--jb-fail);
+}
+.joy-control-icon {
+  display: block;
+  position: relative;
+  width: 20px;
+  height: 20px;
+}
+.joy-control-icon-mic::before {
+  content: "";
+  position: absolute;
+  left: 6px;
+  top: 2px;
+  width: 8px;
+  height: 12px;
+  border: 1.7px solid currentColor;
+  border-radius: 999px;
+  box-sizing: border-box;
+}
+.joy-control-icon-mic::after {
+  content: "";
+  position: absolute;
+  left: 5px;
+  top: 11px;
+  width: 10px;
+  height: 6px;
+  border: solid currentColor;
+  border-width: 0 1.7px 1.7px;
+  border-radius: 0 0 999px 999px;
+  box-sizing: border-box;
+  box-shadow: 4px 5px 0 -3.2px currentColor, -4px 5px 0 -3.2px currentColor;
+}
+.joy-control-icon-send::before {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: 9px;
+  width: 12px;
+  height: 2px;
+  border-radius: 999px;
+  background: currentColor;
+}
+.joy-control-icon-send::after {
+  content: "";
+  position: absolute;
+  right: 3px;
+  top: 5px;
+  width: 9px;
+  height: 9px;
+  border-top: 2px solid currentColor;
+  border-right: 2px solid currentColor;
+  transform: rotate(45deg);
+  border-radius: 1px;
+}
+.joy-control-icon-stop::before {
+  content: "";
+  position: absolute;
+  inset: 5px;
+  border-radius: 3px;
+  background: currentColor;
+}
+body.mode-desk.nav-home .joy-home-compose-status[data-state="failed"] {
+  color: var(--jb-fail);
+}
+body.mode-desk.nav-home .joy-home-compose-status[data-state="listening"],
+body.mode-desk.nav-home .joy-home-compose-status[data-state="transcribing"],
+body.mode-desk.nav-home .joy-home-compose-status[data-state="accepted"],
+body.mode-desk.nav-home .joy-home-compose-status[data-state="queued"],
+body.mode-desk.nav-home .joy-home-compose-status[data-state="working"],
+body.mode-desk.nav-home .joy-home-compose-status[data-state="thinking"] {
+  color: var(--jb-accent-strong);
+}
+
+/* Daily-use Home hierarchy: orb center, brief right; transcript stays quiet in the stage. */
+body.mode-desk.nav-home .home-transcript-panel {
+  position: absolute;
+  z-index: 18;
+  top: calc(var(--home-pad) + 18px);
+  right: auto;
+  left: clamp(20px, 3.8vw, 64px);
+  width: var(--home-transcript-w);
+  max-width: calc(100% - var(--home-brief-w) - (var(--home-pad) * 3));
+  min-height: 82px;
+  max-height: min(28vh, 230px);
+  overflow-y: auto;
+  padding: 14px 15px;
+  box-sizing: border-box;
+  border: 1px solid rgba(255, 255, 255, 0.055);
+  border-radius: 10px;
+  background: rgba(13, 14, 18, 0.56);
+  color: var(--jb-text);
+  box-shadow: none;
+  backdrop-filter: blur(12px) saturate(1.02);
+  -webkit-backdrop-filter: blur(12px) saturate(1.02);
+  opacity: 0;
+  transform: translateY(-6px);
+  pointer-events: none;
+  transition: opacity 220ms var(--ease), transform 220ms var(--ease);
+}
+
+.home-transcript-kicker {
+  display: none;
+  margin-bottom: 12px;
+  color: var(--jb-muted);
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.home-transcript-panel p {
+  margin: 0;
+  color: var(--jb-text);
+  font-size: clamp(0.9rem, 1vw, 1.05rem);
+  line-height: 1.42;
+}
+
+/* Conversation turns: your words, then Joy's reply, stacked and labeled. */
+.home-transcript-panel .ht-turn[hidden] {
+  display: none;
+}
+.home-transcript-panel .ht-turn + .ht-turn:not([hidden]) {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+.home-transcript-panel .ht-label {
+  display: block;
+  margin-bottom: 2px;
+  color: var(--jb-muted);
+  font-size: 0.7rem;
+  font-weight: 650;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.home-transcript-panel .ht-joy .ht-label {
+  color: var(--jb-accent-strong);
+}
+
+body.mode-desk.nav-home:not(.joy-show-commands) .joy-home-controls {
+  display: none !important;
+}
+
+body.mode-desk.nav-home:not(.joy-show-commands) .orb-label {
+  bottom: -7vh;
+  min-width: min(460px, 42vw);
+  opacity: 0.52;
+}
+
+body.mode-desk.nav-home:not(.joy-show-commands) .orb-label .transcript {
+  display: none;
+}
+
+/* The panel only shows when it holds conversation, never for bare orb states. */
+body.mode-desk.nav-home .home-transcript-panel.active {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+}
+
+body.mode-desk.nav-home:not(.joy-show-commands) .orb-label .state-title {
+  margin: 0;
+  font-size: clamp(0.86rem, 1vw, 1.1rem);
+  letter-spacing: 0.16em;
+}
+
+body.mode-desk.nav-home:not(.joy-show-commands) .mic-indicator {
+  bottom: 20%;
+  font-size: clamp(0.76rem, 0.9vw, 0.95rem);
+  color: var(--jb-accent-strong);
+}
+
+body.mode-desk.nav-home .joy-stage-full .centerpiece {
+  width: clamp(260px, min(39vw, 56vh), 520px);
+  height: clamp(260px, min(39vw, 56vh), 520px);
+  top: 50%;
+  left: calc(var(--home-orb-stage-w) / 2);
+  right: auto;
+  bottom: auto;
+  translate: -50% -50%;
+}
+
+body.mode-desk.nav-home .orb-wrap {
+  width: clamp(220px, min(30vw, 46vh), 430px);
+  height: clamp(220px, min(30vw, 46vh), 430px);
+}
+
+body.mode-desk.nav-home .joy-brief {
+  top: calc(var(--home-pad) - 4px);
+  right: var(--home-pad);
+  bottom: calc(86px + env(safe-area-inset-bottom));
+  width: var(--home-brief-w);
+  padding: 6px 6px 18px 20px;
+  box-shadow: none;
+}
+
+body.mode-desk.nav-home .jb-head {
+  margin-bottom: 18px;
+}
+
+body.mode-desk.nav-home .jb-head h1 {
+  font-size: clamp(1rem, 1.16vw, 1.18rem);
+}
+
+body.mode-desk.nav-home .jb-card {
+  padding: 0 0 13px;
+  margin-bottom: 13px;
+}
+
+body.mode-desk.nav-home .jb-now-event strong {
+  font-size: 1.04rem;
+}
+
+body.mode-desk.nav-home .jb-attn {
+  padding: 9px 10px;
+}
+
+body.mode-desk.nav-home .jb-qa-grid {
+  grid-template-columns: 1fr;
+}
+
+/* Topbar remnants: neutral borders instead of purple */
+.joy-topbar,
+.joy-rail {
+  border-color: var(--jb-border) !important;
+}
+body.mode-desk .joy-rail {
+  background: var(--jb-bg);
+}
+
+/* Desktop rail lock: the daily brief should read as part of the room, not a card stack. */
+@media (min-width: 768px) {
+  body.mode-desk.nav-home .joy-stage-full .stage {
+    background:
+      radial-gradient(circle at 52% 48%, rgba(139, 92, 246, 0.16), rgba(18, 18, 30, 0.18) 34%, rgba(16, 17, 20, 0) 62%),
+      linear-gradient(135deg, rgba(16, 17, 20, 0.08), rgba(8, 9, 13, 0.46));
+  }
+
+  body.mode-desk.nav-home .joy-stage-full .stage::before,
+  body.mode-desk.nav-home .joy-stage-full .stage::after {
+    display: none;
+  }
+
+  body.mode-desk.nav-home .mote-canvas,
+  body.mode-desk.nav-home .particles {
+    display: none;
+  }
+
+  body.mode-desk.nav-home .joy-brief {
+    top: calc(var(--home-pad) - 4px);
+    right: var(--home-pad);
+    bottom: calc(86px + env(safe-area-inset-bottom));
+    left: auto;
+    width: var(--home-brief-w);
+    padding: 6px 6px 18px 20px;
+    border: 0;
+    border-left: 1px solid rgba(255, 255, 255, 0.055);
+    border-radius: 0;
+    background: linear-gradient(90deg, rgba(16, 17, 20, 0), rgba(16, 17, 20, 0.5) 28%, rgba(16, 17, 20, 0.68));
+    box-shadow: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    scrollbar-width: none;
+  }
+
+  body.mode-desk.nav-home .joy-brief::-webkit-scrollbar {
+    display: none;
+  }
+
+  body.mode-desk.nav-home .orb-shell {
+    background:
+      radial-gradient(circle at 31% 24%, rgba(255, 255, 255, 0.9) 0%, rgba(196, 181, 253, 0.7) 12%, transparent 25%),
+      radial-gradient(circle at 44% 34%, rgba(167, 139, 250, 0.92) 0%, rgba(124, 58, 237, 0.82) 42%, rgba(42, 19, 92, 0.94) 78%, rgba(8, 9, 18, 1) 100%);
+    box-shadow:
+      0 0 1.8vw rgba(196, 181, 253, 0.78),
+      0 0 5.2vw rgba(139, 92, 246, 0.42),
+      0 0 7vw rgba(111, 179, 168, 0.14),
+      inset -1.7vw -2vw 3.6vw rgba(22, 12, 54, 0.72),
+      inset 1.2vw 1vw 2vw rgba(255, 255, 255, 0.3);
+  }
+
+  body.mode-desk.nav-home .orb-shell::before {
+    background:
+      radial-gradient(ellipse at 30% 24%, rgba(255, 255, 255, 0.42), transparent 21%),
+      radial-gradient(ellipse at 58% 54%, rgba(111, 179, 168, 0.22), transparent 32%),
+      conic-gradient(from 116deg, transparent 0 42deg, rgba(196, 181, 253, 0.2) 68deg, transparent 112deg 218deg, rgba(111, 179, 168, 0.16) 256deg, transparent 304deg);
+    mask-image: radial-gradient(circle, black 0%, black 68%, transparent 72%);
+    opacity: 0.62;
+    mix-blend-mode: screen;
+    animation: joyOrbSurfaceDrift 11s ease-in-out infinite alternate;
+  }
+
+  body.mode-desk.nav-home .orb-shell::after {
+    background:
+      radial-gradient(ellipse at 27% 23%, rgba(255, 255, 255, 0.34), transparent 18%),
+      radial-gradient(ellipse at 42% 62%, rgba(111, 179, 168, 0.16), transparent 24%),
+      radial-gradient(ellipse at 64% 38%, rgba(196, 181, 253, 0.22), transparent 34%);
+    opacity: 0.7;
+    animation: joyOrbSurfaceDrift 17s ease-in-out infinite alternate-reverse;
+  }
+
+  body.mode-desk.nav-home .orb-wrap {
+    --voice-level: 0;
+    --joy-orb-engagement: 0;
+    --joy-orb-tilt-x: 0deg;
+    --joy-orb-tilt-y: 0deg;
+    transform:
+      perspective(900px)
+      rotateX(var(--joy-orb-tilt-x))
+      rotateY(var(--joy-orb-tilt-y))
+      scale(calc(var(--orb-scale, 1) + (var(--voice-level, 0) * 0.055) + (var(--joy-orb-engagement, 0) * 0.025)));
+    transition: transform 520ms cubic-bezier(0.2, 0.8, 0.22, 1), filter 520ms var(--ease);
+  }
+
+  body.mode-desk.nav-home .orb-wrap:hover {
+    --joy-orb-engagement: 1;
+  }
+
+  body.mode-desk.nav-home .orb-voice-live {
+    --joy-orb-engagement: 1;
+  }
+
+  body.mode-desk.nav-home .orb-voice-live .orb-aura,
+  body.mode-desk.nav-home .orb-voice-live .glow.outer {
+    transform: scale(calc(1.02 + (var(--voice-level, 0) * 0.18)));
+    opacity: calc(0.56 + (var(--voice-level, 0) * 0.38));
+  }
+
+  body.mode-desk.nav-home .orb-voice-live .orb-shell {
+    filter: saturate(calc(1.03 + (var(--voice-level, 0) * 0.55))) brightness(calc(1 + (var(--voice-level, 0) * 0.16)));
+  }
+
+  body.mode-desk.nav-home .orb-personality-calm {
+    --breathe-duration: 8.8s;
+    --breathe-scale-min: 0.965;
+    --breathe-scale-max: 1.035;
+  }
+
+  body.mode-desk.nav-home .orb-personality-focused,
+  body.mode-desk.nav-home .stage.state-thinking .orb-wrap {
+    --joy-orb-engagement: 0.8;
+    --breathe-duration: 4.6s;
+    --breathe-scale-min: 0.97;
+    --breathe-scale-max: 1.07;
+  }
+
+  body.mode-desk.nav-home .orb-personality-curious,
+  body.mode-desk.nav-home .stage.state-listening .orb-wrap,
+  body.mode-desk.nav-home .stage.state-realtime .orb-wrap {
+    --joy-orb-engagement: 1;
+    --breathe-duration: 3.4s;
+    --breathe-scale-min: 0.96;
+    --breathe-scale-max: 1.1;
+  }
+
+  body.mode-desk.nav-home .orb-personality-playful,
+  body.mode-desk.nav-home .stage.state-responding .orb-wrap {
+    --joy-orb-engagement: 0.7;
+    --breathe-duration: 5.2s;
+    --breathe-scale-min: 0.94;
+    --breathe-scale-max: 1.08;
+  }
+
+  body.mode-desk.nav-home .orb-personality-alert,
+  body.mode-desk.nav-home .stage.state-error .orb-wrap {
+    --joy-orb-engagement: 1;
+    --breathe-duration: 2.2s;
+    --breathe-scale-min: 0.98;
+    --breathe-scale-max: 1.12;
+  }
+
+  body.mode-desk.nav-home .stage.state-listening .orb-wrap,
+  body.mode-desk.nav-home .stage.state-realtime .orb-wrap {
+    animation: joyOrbAttend 2.8s cubic-bezier(0.34, 0, 0.2, 1) infinite;
+  }
+
+  body.mode-desk.nav-home .stage.state-thinking .scan {
+    opacity: 0.56;
+  }
+
+  body.mode-desk.nav-home .stage.state-thinking .trail,
+  body.mode-desk.nav-home .stage.state-listening .trail,
+  body.mode-desk.nav-home .stage.state-responding .trail,
+  body.mode-desk.nav-home .stage.state-realtime .trail {
+    opacity: 0.62;
+  }
+
+  body.mode-desk.nav-home .stage.state-responding .ripple {
+    animation: joyOrbSoftReply 2s var(--reveal) infinite;
+  }
+
+  body.mode-desk.nav-home .stage.state-responding .ripple:nth-of-type(2) {
+    animation-delay: 0.58s;
+  }
+
+  body.mode-desk.nav-home .globe {
+    opacity: 0;
+  }
+
+  body.mode-desk.nav-home .glow.outer {
+    background:
+      radial-gradient(circle, rgba(196, 181, 253, 0.26), transparent 42%),
+      radial-gradient(ellipse at 38% 52%, rgba(111, 179, 168, 0.16), transparent 58%);
+  }
+
+  @keyframes joyOrbSurfaceDrift {
+    0% { transform: rotate(-10deg) scale(1.02) translate3d(-1%, 0, 0); }
+    50% { transform: rotate(8deg) scale(1.06) translate3d(1%, -1%, 0); }
+    100% { transform: rotate(18deg) scale(1.03) translate3d(0, 1%, 0); }
+  }
+
+  @keyframes joyOrbAttend {
+    0%, 100% { filter: drop-shadow(0 0 2.4rem rgba(139, 92, 246, 0.24)); }
+    22% { filter: drop-shadow(0 0 3.1rem rgba(196, 181, 253, 0.36)); }
+    42% { filter: drop-shadow(0 0 2.7rem rgba(111, 179, 168, 0.22)); }
+  }
+
+  @keyframes joyOrbSoftReply {
+    0% { transform: scale(0.82); opacity: 0; }
+    22% { opacity: 0.48; }
+    100% { transform: scale(1.82); opacity: 0; }
+  }
+
+  body.mode-desk.nav-home .jb-card {
+    background: transparent;
+    border: 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.045);
+    border-radius: 0;
+    box-shadow: none;
+    padding: 0 0 13px;
+    margin-bottom: 13px;
+  }
+
+  body.mode-desk.nav-home .home-transcript-panel {
+    opacity: 0;
+    transform: translateY(-6px);
+    pointer-events: none;
+    border: 1px solid rgba(255, 255, 255, 0.055);
+    border-radius: 10px;
+    background: rgba(13, 14, 18, 0.56);
+    box-shadow: none;
+    backdrop-filter: blur(12px) saturate(1.02);
+    -webkit-backdrop-filter: blur(12px) saturate(1.02);
+    transition: opacity 220ms var(--ease), transform 220ms var(--ease);
+  }
+
+  @media (max-width: 1180px) {
+    body.mode-desk .joy-home-surface {
+      --home-pad: 18px;
+      --home-brief-w: clamp(270px, 28vw, 314px);
+      --home-transcript-w: clamp(260px, 31vw, 360px);
+      --home-composer-w: clamp(360px, 42vw, 470px);
+    }
+    body.mode-desk.nav-home .joy-brief {
+      width: var(--home-brief-w);
+    }
+    body.mode-desk.nav-home .home-transcript-panel {
+      width: var(--home-transcript-w);
+      left: 20px;
+    }
+    body.mode-desk.nav-home .joy-stage-full .centerpiece {
+      left: calc(var(--home-orb-stage-w) / 2);
+    }
+  }
+
+  @media (max-width: 980px) {
+    body.mode-desk .joy-home-surface {
+      --home-pad: 14px;
+      --home-brief-w: clamp(248px, 30vw, 286px);
+      --home-transcript-w: clamp(230px, 30vw, 310px);
+      --home-composer-w: clamp(320px, 42vw, 420px);
+    }
+    body.mode-desk.nav-home .home-transcript-panel {
+      top: 26px;
+      left: 16px;
+      max-height: min(30vh, 210px);
+      padding: 12px 13px;
+    }
+    body.mode-desk.nav-home .joy-home-compose {
+      max-width: calc(100% - var(--home-brief-w) - 54px);
+    }
+    body.mode-desk.nav-home .joy-stage-full .centerpiece {
+      width: clamp(230px, min(34vw, 50vh), 420px);
+      height: clamp(230px, min(34vw, 50vh), 420px);
+      top: 51%;
+    }
+    body.mode-desk.nav-home .orb-wrap {
+      width: clamp(198px, min(28vw, 42vh), 360px);
+      height: clamp(198px, min(28vw, 42vh), 360px);
+    }
+  }
+
+  body.mode-desk.nav-home .home-transcript-panel.is-joy {
+    border-color: rgba(196, 181, 253, 0.12);
+  }
+
+  body.mode-desk.nav-home .home-transcript-panel.active {
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+  }
+
+  body.mode-desk.nav-home:not(.joy-show-commands) .mic-indicator {
+    display: none !important;
+  }
+
+  body.mode-desk.nav-home .stage.state-listening .mic-indicator,
+  body.mode-desk.nav-home .stage.state-realtime .mic-indicator {
+    display: block !important;
+    bottom: 16%;
+    font-size: 0.76rem;
+    opacity: 0.72;
+  }
+}
+
+/* --- Mobile (<= 767px): no horizontal clipping, rail collapses to bottom nav --- */
+@media (max-width: 767px) {
+  html,
+  body.joy-shell {
+    overflow-x: hidden;
+    max-width: 100vw;
+  }
+  .joy-topbar {
+    gap: 8px;
+    padding: 0 10px;
+  }
+  .joy-topbar-clock span {
+    display: none;
+  }
+  .joy-mode-btn {
+    padding: 4px 10px;
+    font-size: 0.7rem;
+  }
+  .jb-head {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+  }
+  .jb-fresh {
+    white-space: normal;
+  }
+  .jb-attn {
+    align-items: flex-start;
+  }
+  .jb-attn-body {
+    min-width: 0;
+    flex-basis: 100%;
+  }
+  body.mode-desk .joy-layout {
+    flex-direction: column;
+  }
+  body.mode-desk .joy-rail {
+    order: 2;
+    display: flex !important;
+    flex-direction: row;
+    overflow-x: auto;
+    overflow-y: hidden;
+    width: 100% !important;
+    min-width: 0;
+    max-width: none;
+    border-top: 1px solid var(--jb-border);
+    border-right: none;
+    padding: 4px 6px calc(4px + env(safe-area-inset-bottom));
+    gap: 2px;
+    background: var(--jb-bg);
+  }
+  body.mode-desk .joy-rail .joy-rail-btn {
+    flex-direction: column;
+    gap: 2px;
+    min-width: 60px;
+    padding: 6px 4px;
+    font-size: 0.62rem;
+  }
+  body.mode-desk .joy-main {
+    order: 1;
+    flex: 1;
+    min-height: 0;
+    position: relative;
+  }
+  body.mode-desk.nav-home .joy-brief {
+    top: auto;
+    left: 12px;
+    right: 12px;
+    bottom: calc(170px + env(safe-area-inset-bottom));
+    width: auto;
+    max-height: min(42vh, 360px);
+    padding: 12px;
+  }
+  .jb-now {
+    grid-template-columns: 1fr;
+  }
+  .jb-now-weather {
+    text-align: left;
+  }
+  .jb-qa-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  body.mode-desk.nav-home .joy-home-compose {
+    left: 12px;
+    right: 12px;
+    bottom: calc(70px + env(safe-area-inset-bottom));
+    width: auto;
+    padding: 8px;
+    border-radius: 12px;
+  }
+
+  body.mode-desk.nav-home .home-transcript-panel {
+    left: 12px;
+    right: 12px;
+    top: 64px;
+    width: auto;
+    min-height: 0;
+    padding: 13px 14px;
+  }
+
+  .home-transcript-kicker {
+    margin-bottom: 6px;
+  }
+
+  .home-transcript-panel strong {
+    margin-bottom: 4px;
+  }
+
+  .home-transcript-panel p {
+    font-size: 1rem;
+  }
+
+  body.mode-desk.nav-home .joy-stage-full .centerpiece {
+    width: min(54vw, 190px);
+    height: min(54vw, 190px);
+    inset: 285px 50% auto 50%;
+    translate: -50% -50%;
+  }
+
+  body.mode-desk.nav-home .orb-wrap {
+    width: min(48vw, 168px);
+    height: min(48vw, 168px);
+  }
+
+  body.mode-desk.nav-home:not(.joy-show-commands) .orb-label {
+    display: none;
+  }
+
+  body.mode-desk.nav-home .joy-brief {
+    top: 378px;
+    left: 12px;
+    right: 12px;
+    bottom: calc(168px + env(safe-area-inset-bottom));
+    width: auto;
+    max-height: none;
+    padding: 12px;
+  }
+
+  body.mode-desk .joy-rail {
+    left: 0;
+    right: 0;
+    width: 100vw !important;
+    max-width: 100vw;
+    box-sizing: border-box;
+  }
+
+  body.mode-desk .joy-rail .joy-rail-btn {
+    min-width: 52px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .jb-btn:active,
+  .jb-qa:active {
+    transform: none;
+  }
+}
+
+/* === Inbox card: skip through recent mail === */
+.jb-inbox h2 {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+.jb-inbox-counts {
+  color: var(--jb-muted);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.jb-mail-view {
+  display: block;
+  padding: 10px 36px 10px 12px;
+  border: 1px solid var(--jb-border);
+  border-radius: var(--jb-radius);
+  background: var(--jb-surface);
+  cursor: pointer;
+  outline: none;
+  transition: border-color 160ms var(--ease), background 160ms var(--ease);
+}
+.jb-mail {
+  position: relative;
+}
+.jb-mail-dismiss {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 2;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 1px solid var(--jb-border);
+  border-radius: 8px;
+  background: rgba(16, 17, 20, 0.72);
+  color: var(--jb-muted);
+  font-size: 0.78rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: border-color 140ms var(--ease), color 140ms var(--ease), background 140ms var(--ease);
+}
+.jb-mail-dismiss:hover {
+  border-color: rgba(222, 127, 114, 0.34);
+  background: rgba(222, 127, 114, 0.1);
+  color: var(--jb-fail);
+}
+.jb-mail-view:hover,
+.jb-mail-view:focus-visible {
+  border-color: rgba(111, 179, 168, 0.4);
+  background: var(--jb-surface-2);
+}
+.jb-mail-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+  color: var(--jb-muted);
+  font-size: 0.72rem;
+}
+.jb-mail-tag {
+  padding: 1px 7px;
+  border-radius: 999px;
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.jb-mail-tag-school {
+  color: #9ecbff;
+  background: rgba(96, 155, 240, 0.14);
+}
+.jb-mail-tag-personal {
+  color: var(--jb-accent-strong);
+  background: rgba(111, 179, 168, 0.14);
+}
+.jb-mail-from {
+  display: block;
+  color: var(--jb-text);
+  font-size: 0.88rem;
+  font-weight: 640;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.jb-mail-subject {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin: 3px 0 0;
+  color: var(--jb-muted);
+  font-size: 0.82rem;
+  line-height: 1.35;
+}
+.jb-mail-snippet {
+  margin: 5px 0 0;
+  color: var(--jb-muted);
+  font-size: 0.76rem;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.jb-mail-bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+.jb-mail-nav {
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 1px solid var(--jb-border);
+  border-radius: 8px;
+  background: var(--jb-surface);
+  color: var(--jb-text);
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: border-color 140ms var(--ease), color 140ms var(--ease);
+}
+.jb-mail-nav:hover:not(:disabled) {
+  border-color: rgba(111, 179, 168, 0.45);
+  color: var(--jb-accent-strong);
+}
+.jb-mail-nav:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.jb-mail-count {
+  min-width: 44px;
+  color: var(--jb-muted);
+  font-size: 0.72rem;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+.jb-mail-spacer {
+  flex: 1;
+}
+.jb-mail-act {
+  padding: 4px 10px;
+  font-size: 0.72rem;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* Joy's inner state (diary / garden / flourishing) */
+.jb-inner-label {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--jb-muted);
+  margin-bottom: 3px;
+}
+.jb-inner-diary p,
+.jb-inner-flourish p {
+  margin: 0 0 10px;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  color: var(--jb-text, #f5f5ff);
+}
+.jb-inner-garden {
+  margin-bottom: 10px;
+}
+.jb-inner-plant {
+  display: inline-flex;
+  align-items: center;
+  margin: 0 6px 6px 0;
+  padding: 3px 9px;
+  border: 1px solid rgba(139, 92, 246, 0.28);
+  border-radius: 999px;
+  font-size: 0.76rem;
+  color: #c4b5fd;
+  background: rgba(139, 92, 246, 0.08);
+}
+
+/* Hard lock: the legacy May UI must never appear on Home — any width, any
+   display mode. Command overlay (joy-show-commands) is the only exception. */
+body.nav-home:not(.joy-show-commands) .joy-legacy-hud,
+body.nav-home:not(.joy-show-commands) .joy-legacy-task-panel,
+body.nav-home:not(.joy-show-commands) .joy-home-controls,
+body.nav-home:not(.joy-show-commands) .dashboard-panel,
+body.nav-home:not(.joy-show-commands) .command-book {
+  display: none !important;
+}
+
+/* ================= Hero-card brief — orb-echo redesign =================
+   Appended override layer: glass cards, glowing hero, timeline dots. */
+body.mode-desk.nav-home .joy-brief {
+  padding: 10px 10px 18px 16px;
+}
+body.mode-desk.nav-home .jb-head h1 {
+  font-size: clamp(1.05rem, 1.3vw, 1.3rem);
+  font-weight: 650;
+}
+body.mode-desk.nav-home .jb-fresh {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 11px;
+  border: 1px solid rgba(139, 92, 246, 0.16);
+  border-radius: 999px;
+  font-size: 0.7rem;
+  background: rgba(139, 92, 246, 0.05);
+  white-space: nowrap;
+}
+.jb-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #34d399;
+  box-shadow: 0 0 7px rgba(52, 211, 153, 0.7);
+  animation: jbPulse 2.4s infinite;
+  flex: none;
+}
+@keyframes jbPulse { 50% { opacity: 0.4; } }
+
+body.mode-desk.nav-home .jb-card {
+  background: linear-gradient(160deg, rgba(139, 92, 246, 0.085), rgba(139, 92, 246, 0.02) 60%);
+  border: 1px solid rgba(139, 92, 246, 0.16);
+  border-bottom: 1px solid rgba(139, 92, 246, 0.16);
+  border-radius: 16px;
+  padding: 14px 16px;
+  margin-bottom: 12px;
+  backdrop-filter: blur(8px);
+  transition: border-color 300ms var(--ease, ease);
+}
+body.mode-desk.nav-home .jb-card:hover { border-color: rgba(139, 92, 246, 0.34); }
+body.mode-desk.nav-home .jb-card h2 {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.13em;
+}
+
+/* Now = hero card */
+body.mode-desk.nav-home .jb-now {
+  background: linear-gradient(150deg, rgba(139, 92, 246, 0.17), rgba(139, 92, 246, 0.03) 70%);
+  border-color: rgba(139, 92, 246, 0.32);
+  box-shadow: 0 0 34px rgba(139, 92, 246, 0.13);
+}
+.jb-now-lead {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: rgba(52, 211, 153, 0.1);
+  border: 1px solid rgba(52, 211, 153, 0.28);
+  color: #34d399;
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  margin-bottom: 7px;
+}
+body.mode-desk.nav-home .jb-now-event strong {
+  font-size: clamp(1.08rem, 1.35vw, 1.32rem);
+  line-height: 1.25;
+  display: block;
+}
+.jb-now-time { color: var(--jb-muted); font-size: 0.82rem; }
+.jb-now-weather {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-top: 11px;
+  padding-top: 11px;
+  border-top: 1px solid rgba(139, 92, 246, 0.13);
+  font-size: 0.98rem;
+  color: #c4b5fd;
+}
+.jb-now-weather span { color: var(--jb-muted); font-size: 0.72rem; }
+
+/* Attention rows */
+body.mode-desk.nav-home .jb-attn {
+  border-radius: 12px;
+  background: rgba(245, 158, 11, 0.05);
+  border: 1px solid rgba(245, 158, 11, 0.15);
+  margin-bottom: 8px;
+}
+body.mode-desk.nav-home .jb-attn-approval {
+  background: rgba(139, 92, 246, 0.07);
+  border-color: rgba(139, 92, 246, 0.22);
+}
+
+/* Today = mini timeline */
+.jb-events li { position: relative; padding-left: 17px; }
+.jb-events li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.6em;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  border: 1.5px solid #8b5cf6;
+}
+.jb-events li.jb-past::before { border-color: rgba(139, 92, 246, 0.3); }
+
+/* Quick actions = pills */
+body.mode-desk.nav-home .jb-qa-grid {
+  grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
+  gap: 8px;
+}
+body.mode-desk.nav-home .jb-qa {
+  min-height: 44px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(139, 92, 246, 0.22);
+  background: rgba(139, 92, 246, 0.07);
+  justify-content: center;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: clamp(0.66rem, 0.72vw, 0.74rem);
+  line-height: 1;
+  letter-spacing: 0.055em;
+  transition: background 200ms ease, border-color 200ms ease, transform 160ms ease;
+}
+body.mode-desk.nav-home .jb-qa:hover {
+  background: rgba(139, 92, 246, 0.18);
+  border-color: rgba(139, 92, 246, 0.42);
+}
+body.mode-desk.nav-home .jb-qa-tag {
+  flex: none;
+}
+.jb-now-lead { align-self: flex-start; }
+.jb-mail-dismiss { min-width: 0; max-width: 24px; }
+
+@media (max-width: 767px) {
+  /* Mobile must stay on the v3 orb-first Home. The brief card stack is the
+     pre-rebuild surface and should not reappear when the window narrows. */
+  body.mode-desk.nav-home .joy-brief,
+  body.nav-home:not(.joy-show-commands) .joy-brief {
+    display: none !important;
+  }
+
+  body.mode-desk.nav-home .joy-stage-full {
+    inset: 0;
+  }
+
+  body.mode-desk.nav-home .joy-stage-full .centerpiece {
+    width: min(62vw, 230px);
+    height: min(62vw, 230px);
+    inset: 46% auto auto 50%;
+    translate: -50% -50%;
+  }
+
+  body.mode-desk.nav-home .orb-wrap {
+    width: min(54vw, 198px);
+    height: min(54vw, 198px);
+  }
+
+  body.mode-desk.nav-home .home-transcript-panel {
+    top: 70px;
+    left: 14px;
+    right: 14px;
+    width: auto;
+    max-width: none;
+    transform: none;
+  }
+
+  body.mode-desk.nav-home .joy-home-compose {
+    left: 12px;
+    right: 12px;
+    bottom: calc(70px + env(safe-area-inset-bottom));
+    width: auto;
+    max-width: none;
+    transform: none;
+  }
+
+  body.mode-desk.nav-home .joy-home-compose-row,
+  body.mode-desk.nav-home .joy-compose-input {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
+/* Final v3 Home lock: every viewport uses the rebuilt Mission Control skin.
+   This sits after the responsive rules so tablet/mobile cannot fall back to
+   the old blue grid, idle-city HELLO layer, or legacy globe treatment. */
+body.mode-desk.nav-home .joy-stage-full .stage {
+  background:
+    radial-gradient(circle at 52% 48%, rgba(139, 92, 246, 0.16), rgba(18, 18, 30, 0.18) 34%, rgba(16, 17, 20, 0) 62%),
+    linear-gradient(135deg, rgba(16, 17, 20, 0.08), rgba(8, 9, 13, 0.46)) !important;
+}
+
+body.mode-desk.nav-home .joy-stage-full .stage::before,
+body.mode-desk.nav-home .joy-stage-full .stage::after,
+body.mode-desk.nav-home .mote-canvas,
+body.mode-desk.nav-home .particles,
+body.mode-desk.nav-home .idle-city,
+body.mode-desk.nav-home .wake-mode-dot,
+body.mode-desk.nav-home #roomModeDot {
+  display: none !important;
+}
+
+body.mode-desk.nav-home .orb-shell {
+  background:
+    radial-gradient(circle at 31% 24%, rgba(255, 255, 255, 0.9) 0%, rgba(196, 181, 253, 0.7) 12%, transparent 25%),
+    radial-gradient(circle at 44% 34%, rgba(167, 139, 250, 0.92) 0%, rgba(124, 58, 237, 0.82) 42%, rgba(42, 19, 92, 0.94) 78%, rgba(8, 9, 18, 1) 100%) !important;
+  box-shadow:
+    0 0 1.8vw rgba(196, 181, 253, 0.78),
+    0 0 5.2vw rgba(139, 92, 246, 0.42),
+    0 0 7vw rgba(111, 179, 168, 0.14),
+    inset -1.7vw -2vw 3.6vw rgba(22, 12, 54, 0.72),
+    inset 1.2vw 1vw 2vw rgba(255, 255, 255, 0.3) !important;
+}
+
+body.mode-desk.nav-home .orb-shell::before {
+  background:
+    radial-gradient(ellipse at 30% 24%, rgba(255, 255, 255, 0.42), transparent 21%),
+    radial-gradient(ellipse at 58% 54%, rgba(111, 179, 168, 0.22), transparent 32%),
+    conic-gradient(from 116deg, transparent 0 42deg, rgba(196, 181, 253, 0.2) 68deg, transparent 112deg 218deg, rgba(111, 179, 168, 0.16) 256deg, transparent 304deg) !important;
+  mask-image: radial-gradient(circle, black 0%, black 68%, transparent 72%);
+  opacity: 0.62 !important;
+  mix-blend-mode: screen;
+  animation: joyOrbSurfaceDriftAll 11s ease-in-out infinite alternate;
+}
+
+body.mode-desk.nav-home .orb-shell::after {
+  background:
+    radial-gradient(ellipse at 27% 23%, rgba(255, 255, 255, 0.34), transparent 18%),
+    radial-gradient(ellipse at 42% 62%, rgba(111, 179, 168, 0.16), transparent 24%),
+    radial-gradient(ellipse at 64% 38%, rgba(196, 181, 253, 0.22), transparent 34%) !important;
+  opacity: 0.7 !important;
+  animation: joyOrbSurfaceDriftAll 17s ease-in-out infinite alternate-reverse;
+}
+
+body.mode-desk.nav-home .orb-wrap {
+  --voice-level: 0;
+  --joy-orb-engagement: 0;
+  --joy-orb-tilt-x: 0deg;
+  --joy-orb-tilt-y: 0deg;
+  transform:
+    perspective(900px)
+    rotateX(var(--joy-orb-tilt-x))
+    rotateY(var(--joy-orb-tilt-y))
+    scale(calc(var(--orb-scale, 1) + (var(--voice-level, 0) * 0.055) + (var(--joy-orb-engagement, 0) * 0.025))) !important;
+  transition:
+    transform 880ms cubic-bezier(0.19, 1, 0.22, 1),
+    filter 760ms var(--ease);
+}
+
+body.mode-desk.nav-home .stage.is-transitioning .orb-wrap {
+  transition:
+    transform 960ms cubic-bezier(0.19, 1, 0.22, 1),
+    filter 900ms var(--ease);
+}
+
+body.mode-desk.nav-home .orb-wrap:hover,
+body.mode-desk.nav-home .orb-voice-live {
+  --joy-orb-engagement: 1;
+}
+
+body.mode-desk.nav-home .orb-voice-live .orb-aura,
+body.mode-desk.nav-home .orb-voice-live .glow.outer {
+  transform: scale(calc(1.02 + (var(--voice-level, 0) * 0.18)));
+  opacity: calc(0.56 + (var(--voice-level, 0) * 0.38));
+}
+
+body.mode-desk.nav-home .orb-voice-live .orb-shell {
+  filter: saturate(calc(1.03 + (var(--voice-level, 0) * 0.55))) brightness(calc(1 + (var(--voice-level, 0) * 0.16)));
+}
+
+body.mode-desk.nav-home .orb-personality-calm {
+  --breathe-duration: 8.8s;
+  --breathe-scale-min: 0.965;
+  --breathe-scale-max: 1.035;
+}
+
+body.mode-desk.nav-home .orb-personality-focused,
+body.mode-desk.nav-home .stage.state-thinking .orb-wrap {
+  --joy-orb-engagement: 0.8;
+  --breathe-duration: 4.6s;
+  --breathe-scale-min: 0.97;
+  --breathe-scale-max: 1.07;
+}
+
+body.mode-desk.nav-home .orb-personality-curious,
+body.mode-desk.nav-home .stage.state-listening .orb-wrap,
+body.mode-desk.nav-home .stage.state-realtime .orb-wrap {
+  --joy-orb-engagement: 1;
+  --breathe-duration: 3.4s;
+  --breathe-scale-min: 0.96;
+  --breathe-scale-max: 1.1;
+}
+
+body.mode-desk.nav-home .orb-personality-playful,
+body.mode-desk.nav-home .stage.state-responding .orb-wrap {
+  --joy-orb-engagement: 0.7;
+  --breathe-duration: 5.2s;
+  --breathe-scale-min: 0.94;
+  --breathe-scale-max: 1.08;
+}
+
+body.mode-desk.nav-home .orb-personality-alert,
+body.mode-desk.nav-home .stage.state-error .orb-wrap {
+  --joy-orb-engagement: 1;
+  --breathe-duration: 2.2s;
+  --breathe-scale-min: 0.98;
+  --breathe-scale-max: 1.12;
+}
+
+body.mode-desk.nav-home .stage.state-listening .orb-wrap,
+body.mode-desk.nav-home .stage.state-realtime .orb-wrap {
+  animation: none !important;
+  filter: drop-shadow(0 0 3rem rgba(196, 181, 253, 0.28));
+}
+
+body.mode-desk.nav-home .stage.state-listening .orb-aura,
+body.mode-desk.nav-home .stage.state-realtime .orb-aura,
+body.mode-desk.nav-home .stage.state-listening .glow.outer,
+body.mode-desk.nav-home .stage.state-realtime .glow.outer {
+  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+body.mode-desk.nav-home .stage.is-transitioning .orb-aura,
+body.mode-desk.nav-home .stage.is-transitioning .glow.outer,
+body.mode-desk.nav-home .stage.is-transitioning .orb-shell,
+body.mode-desk.nav-home .stage.is-transitioning .trail,
+body.mode-desk.nav-home .stage.is-transitioning .scan {
+  transition-duration: 860ms;
+}
+
+body.mode-desk.nav-home .stage.state-thinking .scan {
+  opacity: 0.56;
+}
+
+body.mode-desk.nav-home .stage.state-thinking .trail,
+body.mode-desk.nav-home .stage.state-listening .trail,
+body.mode-desk.nav-home .stage.state-responding .trail,
+body.mode-desk.nav-home .stage.state-realtime .trail {
+  opacity: 0.62;
+}
+
+body.mode-desk.nav-home .stage.state-responding .ripple {
+  animation: joyOrbSoftReplyAll 2s var(--reveal) infinite;
+}
+
+body.mode-desk.nav-home .stage.state-responding .ripple:nth-of-type(2) {
+  animation-delay: 0.58s;
+}
+
+body.mode-desk.nav-home .globe {
+  opacity: 0 !important;
+}
+
+body.mode-desk.nav-home .glow.outer {
+  background:
+    radial-gradient(circle, rgba(196, 181, 253, 0.26), transparent 42%),
+    radial-gradient(ellipse at 38% 52%, rgba(111, 179, 168, 0.16), transparent 58%) !important;
+}
+
+@keyframes joyOrbSurfaceDriftAll {
+  0% { transform: rotate(-10deg) scale(1.02) translate3d(-1%, 0, 0); }
+  50% { transform: rotate(8deg) scale(1.06) translate3d(1%, -1%, 0); }
+  100% { transform: rotate(18deg) scale(1.03) translate3d(0, 1%, 0); }
+}
+
+@keyframes joyOrbAttendAll {
+  0%, 100% { filter: drop-shadow(0 0 2.4rem rgba(139, 92, 246, 0.24)); }
+  22% { filter: drop-shadow(0 0 3.1rem rgba(196, 181, 253, 0.36)); }
+  42% { filter: drop-shadow(0 0 2.7rem rgba(111, 179, 168, 0.22)); }
+}
+
+@keyframes joyOrbSoftReplyAll {
+  0% { transform: scale(0.82); opacity: 0; }
+  22% { opacity: 0.48; }
+  100% { transform: scale(1.82); opacity: 0; }
+}
+
+/* 2026-09-05: keep the Home text dock usable and viewport-bound.
+   Use fixed positioning so short tablet/desktop heights cannot push the dock below
+   the viewport when the Home stage/layout is taller than the visible pane. */
+@media (max-width: 900px) {
+  body.mode-desk.nav-home .joy-home-compose {
+    display: grid !important;
+    position: fixed;
+    left: 12px;
+    right: 12px;
+    bottom: calc(76px + env(safe-area-inset-bottom));
+    width: auto;
+    max-width: none;
+    transform: none;
+  }
+}
+
+@media (min-width: 901px) {
+  body.mode-desk.nav-home .joy-home-compose {
+    left: calc(var(--joy-rail-w) + (var(--home-orb-stage-w) / 2));
+    max-width: calc(100vw - var(--joy-rail-w) - var(--home-brief-w) - 40px);
+  }
+}
+
+@media (min-width: 901px) and (max-height: 900px) {
+  body.mode-desk.nav-home .joy-home-compose {
+    position: fixed;
+    bottom: calc(18px + env(safe-area-inset-bottom));
+  }
+}

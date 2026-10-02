@@ -1,0 +1,83 @@
+{
+  "source_repository": "joy-mission-control-v3",
+  "source_commit": "bb7717b75ab5f33ab40311f0f6c99bcca90a3c62",
+  "source_state": "dirty working tree; selected files only, no git history",
+  "extracted_functions": [
+    "now_iso",
+    "iso_age_s",
+    "_read_json",
+    "_write_json",
+    "get_panel",
+    "set_panel",
+    "append_panel",
+    "panel_data",
+    "normalize_calendar",
+    "_missing",
+    "build_dashboard_state",
+    "build_mission",
+    "_multipart",
+    "parse_multipart_file",
+    "TranscriptionProviderError"
+  ],
+  "interface_files": [
+    {
+      "file": "joy-home/index.html",
+      "source_sha256": "35d3445d7bb822af636cef54afb03cb03f50b9b7fe329cbee728cef6010092ff"
+    },
+    {
+      "file": "joy-home/panel.html",
+      "source_sha256": "a572c0edff98e42e52c2013934c2d9cf0548ea1df228ce34dbfaedb8b2df6516"
+    },
+    {
+      "file": "joy-home/styles.css",
+      "source_sha256": "4b592c20d31e6776eb796efdf11f7b9d136549dda91331963b30cfed54c0e801"
+    },
+    {
+      "file": "joy-home/shell.css",
+      "source_sha256": "55e1c4fb97cc7b43676ea59b77b46bcc6d0188ce127b485fb82f34d63aa6496c"
+    },
+    {
+      "file": "joy-home/brief.css",
+      "source_sha256": "7e61e51d27d15fad1ccf780335b9891bf648e800f9b8ba2cda803330aa10d6fb"
+    },
+    {
+      "file": "joy-home/shell.js",
+      "source_sha256": "1c9c003a54859e48ae8a163891c353c3a36699d99d67dd0177a3ef583ce036ae"
+    },
+    {
+      "file": "joy-home/text-chat.js",
+      "source_sha256": "041a07edf4ce461fd34df6277e47970e3c4db4431cd7012d729eac25197c54be"
+    },
+    {
+      "file": "joy-home/orb-fx.js",
+      "source_sha256": "4842ace07a9df3048114b4fac6c027486bdc7abb23893ebabade3363697cbd1b"
+    },
+    {
+      "file": "joy-home/app.js",
+      "source_sha256": "2b19002d19b73dc505bce1b1cfb518b82a5971fcc8ee8434d8270ee65d7531ba"
+    },
+    {
+      "file": "joy-home/brief.js",
+      "source_sha256": "8e275dcba0a8d5c3f6bfab08797393cab4e44071984e2f0ba33806cd2b6204bb"
+    }
+  ],
+  "transformations": [
+    "Neutral greeting; personal addresses replaced by reserved sample address",
+    "Education and music integrations excluded; no media licenses assumed",
+    "New portable HTTP adapter with explicit queue and local review; no private backend imports",
+    "Navigation limited to working local subset; unavailable model/session/voice controls disabled",
+    "Queued messages explicitly labeled bridge not connected; no Working agent claim",
+    "Approval empty state and receipt describe local review only"
+  ],
+  "excluded": [
+    "runtime data",
+    "credentials and keychain resolvers",
+    "personal context and prompts",
+    "diary and messages access",
+    "native app and filesystem tools",
+    "personal email/calendar integrations",
+    "git history",
+    "voice inference and live agent bridge",
+    "control-overview module"
+  ]
+}

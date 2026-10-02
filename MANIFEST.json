@@ -1,0 +1,21 @@
+{
+  "server.py": "33670626943a4b3da0330e7b0bec19ce7b14ccb86c57c0453f707aae462f06a9",
+  "PROVENANCE.json": "7a7c0c6af76c931757a4d7a542cc7fa8568a2b265f7a8c36ba2ad927a46deafa",
+  "JS-CHECKS.json": "72cc44c2692da090e1f00a709393f9e7216557e20b1ed89af21ff488054a7491",
+  "RELEASE-REVIEW.json": "d3c696dc4950afe6d4bc0f0c98943d07bb47923f48ebfa8b6a3d1ac467a13d2d",
+  "core.py": "a53a1f74000898388496eb0c8988ace2e0c4dca4a88dfdfa5aa31b042b2917a9",
+  "README.md": "436a032e977ec7102b2be4ddbcf3fb6898f8b1c63f4814528b2760c3dcb9743f",
+  ".gitignore": "843020b97b51e82585a1cab8223b7eb013a3b7ecce254752195152df2f546c0d",
+  "scripts/load_samples.py": "21beec58b634097f3062532493f726b863608a211caaf352e3dbd050e8a21419",
+  "scripts/check_release.py": "870b356af96071b280f921b0ff4d21be115c041407167ce80530005f9f2c646f",
+  "joy-home/shell.js": "da3a7573996d01224b9ef911824ea5a4c68ef0be83ed80bf2732166c66ff7a55",
+  "joy-home/brief.css": "7e61e51d27d15fad1ccf780335b9891bf648e800f9b8ba2cda803330aa10d6fb",
+  "joy-home/index.html": "c541417ac7778927e94219ae97718148a7217c64dc70b338eb8ad78393de909a",
+  "joy-home/orb-fx.js": "4842ace07a9df3048114b4fac6c027486bdc7abb23893ebabade3363697cbd1b",
+  "joy-home/styles.css": "4b592c20d31e6776eb796efdf11f7b9d136549dda91331963b30cfed54c0e801",
+  "joy-home/brief.js": "8d9f16118a7bb56cd4d87c2d3d39009fcb7c7b590dbcefc7c10b071151cd51a2",
+  "joy-home/shell.css": "55e1c4fb97cc7b43676ea59b77b46bcc6d0188ce127b485fb82f34d63aa6496c",
+  "joy-home/text-chat.js": "c701949040266aff5051cdbfee8c2ca13a2aea97e43d0ca9528aaedae341653b",
+  "joy-home/panel.html": "d9d76a9b354922158b0b3c6456783197094b669245299ffd3a80f523fe8c54e1",
+  "joy-home/app.js": "abed675d452612a123447b9bed241b527fb3c8140bdd342ad4397278fe6610a5"
+}

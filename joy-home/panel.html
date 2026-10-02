@@ -1,0 +1,920 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Joy — Panel</title>
+  <style>
+    :root {
+      --bg: #06060c;
+      --card: rgba(139, 92, 246, 0.055);
+      --card-solid: #0d0b18;
+      --border: rgba(139, 92, 246, 0.18);
+      --border-soft: rgba(139, 92, 246, 0.10);
+      --text: #f5f5ff;
+      --ink-2: rgba(245, 245, 255, 0.72);
+      --muted: rgba(245, 245, 255, 0.5);
+      --accent: #c4b5fd;
+      --violet: #8b5cf6;
+      --green: #34d399;
+      --amber: #f59e0b;
+      --red: #f87171;
+      --ease: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font: 400 0.95rem/1.5 system-ui, -apple-system, sans-serif;
+      padding: 26px clamp(16px, 4vw, 44px) 70px;
+      position: relative;
+    }
+    /* orb echo — soft violet bloom behind the header */
+    body::before {
+      content: "";
+      position: fixed;
+      top: -220px; left: -120px;
+      width: 560px; height: 460px;
+      background: radial-gradient(closest-side, rgba(139, 92, 246, 0.16), rgba(0, 240, 255, 0.03) 65%, transparent);
+      pointer-events: none;
+      z-index: 0;
+    }
+    header, #root { position: relative; z-index: 1; }
+    header { display: flex; align-items: center; gap: 12px; margin-bottom: 22px; flex-wrap: wrap; }
+    .page-icon {
+      width: 38px; height: 38px; border-radius: 11px;
+      display: grid; place-items: center;
+      background: linear-gradient(140deg, rgba(139,92,246,0.22), rgba(139,92,246,0.05));
+      border: 1px solid var(--border);
+      color: var(--accent); font-size: 1.05rem;
+      box-shadow: 0 0 18px rgba(139, 92, 246, 0.18);
+    }
+    h1 { margin: 0; font-size: 1.2rem; font-weight: 650; letter-spacing: 0.01em; }
+    .sub { width: 100%; margin: -6px 0 0 50px; color: var(--muted); font-size: 0.8rem; }
+    .fresh {
+      margin-left: auto;
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 4px 12px; border-radius: 999px;
+      border: 1px solid var(--border-soft);
+      background: rgba(139, 92, 246, 0.05);
+      color: var(--muted); font-size: 0.74rem; white-space: nowrap;
+    }
+    .fresh .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); flex: none; }
+    .fresh.live .dot { background: var(--green); box-shadow: 0 0 8px rgba(52, 211, 153, 0.7); animation: pulse 2.4s infinite; }
+    .fresh.stale .dot { background: var(--amber); }
+    @keyframes pulse { 50% { opacity: 0.45; } }
+
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 14px; }
+    .card {
+      background: linear-gradient(160deg, rgba(139,92,246,0.09), rgba(139,92,246,0.03) 55%);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px 18px;
+      backdrop-filter: blur(6px);
+      transition: border-color 300ms var(--ease), transform 300ms var(--ease);
+    }
+    .card:hover { border-color: rgba(139, 92, 246, 0.4); }
+    .card b { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 0.92rem; color: var(--text); margin-bottom: 6px; font-weight: 600; }
+    .card p { margin: 0; color: var(--ink-2); font-size: 0.86rem; }
+    .card time { display: block; margin-top: 8px; color: var(--muted); font-size: 0.72rem; }
+    .sec { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); margin: 26px 0 12px; font-weight: 600; }
+    .sec:first-child { margin-top: 0; }
+
+    .tag { display: inline-flex; align-items: center; gap: 5px; padding: 2px 10px; border-radius: 999px; border: 1px solid var(--border); font-size: 0.7rem; font-weight: 500; color: var(--accent); background: rgba(139,92,246,0.07); }
+    .tag.green { color: var(--green); border-color: rgba(52,211,153,0.3); background: rgba(52,211,153,0.06); }
+    .tag.amber { color: var(--amber); border-color: rgba(245,158,11,0.3); background: rgba(245,158,11,0.06); }
+
+    .row { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+    button {
+      background: rgba(139,92,246,0.16);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 9px;
+      padding: 7px 16px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 200ms var(--ease);
+    }
+    button:hover { background: rgba(139,92,246,0.3); }
+    button.reject { background: transparent; border-color: rgba(248,113,113,0.28); color: rgba(248,113,113,0.9); }
+    button.reject:hover { background: rgba(248,113,113,0.1); }
+    button.ghost-btn { background: transparent; color: var(--muted); border-color: var(--border-soft); }
+
+    ul.plain { list-style: none; margin: 0; padding: 0; max-width: 860px; }
+    ul.plain li { padding: 10px 4px; border-bottom: 1px solid rgba(255,255,255,0.045); display: flex; gap: 14px; align-items: baseline; }
+    .t { color: var(--accent); min-width: 84px; font-variant-numeric: tabular-nums; font-size: 0.85rem; flex: none; }
+    .muted { color: var(--muted); }
+    .diary { font-size: 0.98rem; line-height: 1.65; white-space: pre-wrap; color: var(--ink-2); }
+
+    /* stat tiles (Usage) */
+    .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 220px)); gap: 14px; margin-bottom: 8px; }
+    .tile { background: linear-gradient(160deg, rgba(139,92,246,0.1), rgba(139,92,246,0.03)); border: 1px solid var(--border); border-radius: 14px; padding: 14px 18px; }
+    .tile .k { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); }
+    .tile .v { font-size: 1.65rem; font-weight: 650; margin-top: 2px; font-variant-numeric: tabular-nums; }
+    .bar-track { flex: 1; height: 10px; border-radius: 5px; background: rgba(255,255,255,0.04); overflow: hidden; }
+    .bar-fill { display: block; height: 100%; border-radius: 5px 4px 4px 5px; background: linear-gradient(90deg, rgba(139,92,246,0.55), var(--violet)); box-shadow: 0 0 10px rgba(139,92,246,0.35); }
+
+    /* calendar timeline */
+    .tl { position: relative; max-width: 760px; padding-left: 20px; }
+    .tl::before { content: ""; position: absolute; left: 5px; top: 6px; bottom: 6px; width: 2px; border-radius: 1px; background: linear-gradient(180deg, rgba(139,92,246,0.4), rgba(139,92,246,0.06)); }
+    .tl-item { position: relative; padding: 9px 4px 9px 18px; display: flex; gap: 14px; align-items: baseline; }
+    .tl-item::before { content: ""; position: absolute; left: -19px; top: 17px; width: 10px; height: 10px; border-radius: 50%; background: var(--card-solid); border: 2px solid var(--violet); }
+    .tl-item.past { opacity: 0.4; }
+    .tl-item.past::before { border-color: rgba(139,92,246,0.35); }
+    .tl-item.now::before { background: var(--green); border-color: var(--green); box-shadow: 0 0 10px rgba(52,211,153,0.8); }
+    .tl-title { font-weight: 550; }
+
+    /* notifications */
+    .notice-shell { display: grid; gap: 18px; max-width: 1080px; }
+    .notice-metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; max-width: 860px; }
+    .notice-metric { border: 1px solid var(--border-soft); border-radius: 13px; padding: 12px 14px; background: rgba(139,92,246,0.04); }
+    .notice-metric span { display: block; color: var(--muted); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.12em; }
+    .notice-metric strong { display: block; margin-top: 2px; font-size: 1.35rem; line-height: 1.1; font-weight: 650; font-variant-numeric: tabular-nums; }
+    .notice-list { display: grid; gap: 10px; max-width: 920px; }
+    .notice-card {
+      position: relative;
+      display: grid;
+      grid-template-columns: 4px minmax(0, 1fr);
+      gap: 14px;
+      padding: 0;
+      overflow: hidden;
+    }
+    .notice-stripe { background: var(--violet); opacity: 0.55; }
+    .notice-card[data-priority="urgent"] .notice-stripe,
+    .notice-card[data-priority="critical"] .notice-stripe { background: var(--red); opacity: 0.9; }
+    .notice-card[data-priority="high"] .notice-stripe { background: var(--amber); opacity: 0.86; }
+    .notice-card[data-priority="low"] .notice-stripe { background: var(--muted); opacity: 0.36; }
+    .notice-body { padding: 15px 16px 14px 0; min-width: 0; }
+    .notice-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 5px; }
+    .notice-title { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; min-width: 0; }
+    .notice-title b { margin: 0; display: inline; }
+    .notice-meta { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 8px; color: var(--muted); font-size: 0.74rem; }
+    .notice-meta span { min-width: 0; }
+    .notice-card p { max-width: 760px; }
+    .notice-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+    .notice-actions button { padding: 6px 12px; font-size: 0.76rem; }
+    .notice-actions button[disabled] { cursor: wait; opacity: 0.54; }
+    .tag.red { color: var(--red); border-color: rgba(248,113,113,0.34); background: rgba(248,113,113,0.07); }
+    .tag.muted { color: var(--muted); border-color: var(--border-soft); background: rgba(255,255,255,0.025); }
+    @media (max-width: 620px) {
+      .notice-top { display: grid; gap: 8px; }
+      .notice-actions button { flex: 1 1 120px; }
+    }
+
+    /* garden stage dots */
+    .stages { letter-spacing: 0.28em; color: var(--accent); font-size: 0.8rem; margin: 4px 0 8px; text-shadow: 0 0 8px rgba(139,92,246,0.5); }
+
+    /* ghost preview (empty state) */
+    .ghost { opacity: 0.5; filter: saturate(0.55); position: relative; pointer-events: none; }
+    .ghost .card, .ghost .tile { border-style: dashed; }
+    .ghost-note { display: inline-flex; align-items: center; gap: 7px; margin: 0 0 14px; padding: 5px 13px; border-radius: 999px; border: 1px dashed var(--border); color: var(--muted); font-size: 0.75rem; }
+
+    /* plug-in card — how Joy fills this page */
+    .plug {
+      max-width: 860px; margin-top: 26px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: linear-gradient(160deg, rgba(139,92,246,0.1), rgba(6,6,12,0.4));
+      padding: 16px 18px;
+    }
+    .plug h3 { margin: 0 0 4px; font-size: 0.85rem; color: var(--accent); display: flex; align-items: center; gap: 8px; }
+    .plug p { margin: 0 0 10px; color: var(--muted); font-size: 0.8rem; }
+    .plug pre {
+      margin: 0; padding: 12px 14px;
+      background: rgba(0, 0, 0, 0.45);
+      border: 1px solid var(--border-soft);
+      border-radius: 10px;
+      font: 0.76rem/1.55 ui-monospace, "SF Mono", Menlo, monospace;
+      color: var(--ink-2);
+      overflow-x: auto;
+      white-space: pre;
+    }
+    .plug .endpoint { color: var(--green); }
+    .plug-foot { display: flex; gap: 8px; margin-top: 10px; align-items: center; }
+    .copied { color: var(--green); font-size: 0.75rem; opacity: 0; transition: opacity 300ms; }
+    .copied.show { opacity: 1; }
+    details.plug-toggle { max-width: 860px; margin-top: 26px; }
+    details.plug-toggle summary { cursor: pointer; color: var(--muted); font-size: 0.78rem; list-style: none; display: inline-flex; align-items: center; gap: 7px; padding: 5px 13px; border: 1px solid var(--border-soft); border-radius: 999px; }
+    details.plug-toggle summary:hover { color: var(--accent); border-color: var(--border); }
+    details.plug-toggle[open] summary { margin-bottom: 4px; }
+    details.plug-toggle .plug { margin-top: 8px; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="page-icon" id="icon">◆</div>
+    <h1 id="title">Loading…</h1>
+    <span class="fresh" id="fresh" hidden><span class="dot"></span><span id="freshText"></span></span>
+    <div class="sub" id="sub"></div>
+  </header>
+  <p id="approvalDecisionStatus" class="muted" role="status" aria-live="polite"></p>
+  <div id="root"><p class="muted">Loading…</p></div>
+
+  <script>
+  (function () {
+    const page = (new URLSearchParams(location.search).get("page") || "tasks").toLowerCase();
+    const root = document.getElementById("root");
+
+    function esc(s) {
+      return String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" }[c]));
+    }
+    function when(iso) {
+      const d = new Date(iso);
+      return Number.isFinite(d.getTime()) ? d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }) : "";
+    }
+    async function j(url, opts) {
+      const res = await fetch(url, opts);
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || data.copy || "HTTP " + res.status);
+      return data;
+    }
+    const fmtTok = (n) => n >= 1e6 ? (n / 1e6).toFixed(1) + "M" : n >= 1e3 ? Math.round(n / 1e3) + "k" : String(n);
+    function sourceLine(item, fallback) {
+      const src = item?.source || fallback || "source unknown";
+      const refreshed = item?.last_refresh || item?.updated_at || item?.created_at || item?.received_at || "";
+      const fresh = item?.freshness || item?.health || (refreshed ? "healthy" : "stale");
+      return `<div class="notice-meta"><span>Source: ${esc(src)}</span>${refreshed ? `<span>Refresh: ${esc(refreshed)}</span>` : ""}<span class="tag ${fresh === "healthy" ? "green" : "amber"}">${esc(fresh)}</span></div>`;
+    }
+    function shortDate(iso) {
+      const d = new Date(iso || "");
+      return Number.isFinite(d.getTime()) ? d.toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) : String(iso || "");
+    }
+
+    /* ---- self-describing plug-in card, generated from GET /api/joy ---- */
+    let apiDoc = null;
+    function shapeValue(value) {
+      if (Array.isArray(value)) return value.length ? [shapeValue(value[0])] : [];
+      if (value && typeof value === "object") {
+        return Object.fromEntries(Object.entries(value).map(([key, val]) => [key, shapeValue(val)]));
+      }
+      if (typeof value === "number") return "<number>";
+      if (typeof value === "boolean") return "<boolean>";
+      if (value === null) return null;
+      return "<string>";
+    }
+    function panelShape(panel) {
+      const spec = apiDoc?.panels?.[panel];
+      if (!spec) return {};
+      const item = shapeValue(spec.example_item || {});
+      return spec.kind === "list" ? [item] : item;
+    }
+    function plugCard(panel, opts = {}) {
+      const spec = apiDoc?.panels?.[panel];
+      const endpoint = opts.endpoint || `/api/panels/${panel}`;
+      const shape = panelShape(panel);
+      const body = JSON.stringify(shape, null, 2);
+      const curl = `curl -X POST http://127.0.0.1:8765${endpoint} \\\n  -H 'Content-Type: application/json' \\\n  -d '${JSON.stringify(shape)}'`;
+      const inner = `<div class="plug">
+          <h3>✦ How Joy fills this page</h3>
+          <p>${esc(opts.blurb || spec?.description || "")}</p>
+          <pre><span class="endpoint">POST ${esc(endpoint)}</span>\n${esc(body)}</pre>
+          <div class="plug-foot">
+            <button type="button" class="ghost-btn" data-copy="${esc(curl)}">Copy curl</button>
+            <span class="copied">copied ✓</span>
+          </div>
+        </div>`;
+      if (opts.collapsed) {
+        return `<details class="plug-toggle"><summary>✦ How Joy updates this page</summary>${inner}</details>`;
+      }
+      return inner;
+    }
+    function wireCopy() {
+      root.querySelectorAll("[data-copy]").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          try { await navigator.clipboard.writeText(btn.dataset.copy); } catch (_) {}
+          const note = btn.parentElement.querySelector(".copied");
+          if (note) { note.classList.add("show"); setTimeout(() => note.classList.remove("show"), 1600); }
+        });
+      });
+    }
+    /* ------------------------------ views ------------------------------ */
+    const VIEWS = {
+      command_center: {
+        title: "Joy Command Center", icon: "[ ]", key: "command_center", sub: "Today, replies, approvals, work, and automation health",
+        async data() { return (await j("/api/panels/command_center")).data; },
+        render(d) {
+          if (!d || typeof d !== "object") return null;
+          const evs = Array.isArray(d.today) ? d.today : [];
+          const work = Array.isArray(d.active_work) ? d.active_work : [];
+          const deadlines = Array.isArray(d.at_risk_deadlines) ? d.at_risk_deadlines : [];
+          const health = d.automation_health || {};
+          const eventList = evs.length ? evs.slice(0, 5).map((ev) => `<li><span class="t">${esc(ev.start_time || when(ev.start) || "")}</span><span>${esc(ev.title || ev.summary || "Event")}</span></li>`).join("") : '<li><span class="muted">No calendar pressure found for today.</span></li>';
+          const deadlineList = deadlines.length ? deadlines.map((n) => `<li><span class="t">${esc(n.priority || "high")}</span><span>${esc(n.title || n.body || "At-risk item")}</span></li>`).join("") : '<li><span class="muted">No high-risk deadlines found.</span></li>';
+          return `<div class="notice-shell">
+            <div class="notice-metrics">
+              <div class="notice-metric"><span>Replies</span><strong>${Number(d.reply_needed_count || 0)}</strong></div>
+              <div class="notice-metric"><span>Approvals</span><strong>${Number(d.pending_approvals || 0)}</strong></div>
+              <div class="notice-metric"><span>Active work</span><strong>${work.length}</strong></div>
+              <div class="notice-metric"><span>Fix</span><strong>${Number(health.fix || 0)}</strong></div>
+            </div>
+            <div class="grid" style="align-items:start">
+              <div class="card"><b>Today</b><ul class="plain">${eventList}</ul>${sourceLine(d, "gog calendar metadata")}</div>
+              <div class="card"><b>Tomorrow</b><p>${d.tomorrow_first_event ? `${esc(d.tomorrow_first_event.title || d.tomorrow_first_event.summary || "Event")} ${esc(d.tomorrow_first_event.start_time || when(d.tomorrow_first_event.start) || "")}` : "No first event found yet."}</p>${sourceLine(d, "gog calendar metadata")}</div>
+              <div class="card"><b>At risk</b><ul class="plain">${deadlineList}</ul>${sourceLine(d, "runtime/state + notifications")}</div>
+              <div class="card"><b>Automation</b><p>${Number(health.keep || 0)} keep · ${Number(health.fix || 0)} fix · ${Number(health.retire || 0)} retire</p>${sourceLine(d, "openclaw cron + runtime state")}</div>
+            </div>
+            <div class="sec">Active work</div><div class="grid">${work.slice(0, 6).map((w) => `<div class="card"><b>${esc(w.label || w.id)}</b><p>${esc(w.owner || "Joy")} · ${esc(w.status || "open")}${w.blocker ? ` · ${esc(w.blocker)}` : ""}</p>${sourceLine(w, "openclaw sessions")}</div>`).join("") || '<p class="muted">No active work reported.</p>'}</div>
+          </div>`;
+        },
+      },
+      email_reply_queue: {
+        title: "Email Reply Queue", icon: "@", key: "email_reply_queue", sub: "Read-only triage. Approve stages a local draft only.",
+        async data() { return (await j("/api/panels/email_reply_queue")).data; },
+        render(rows) {
+          if (!Array.isArray(rows) || !rows.length) return null;
+          const pending = rows.filter((r) => (r.status || "pending") === "pending");
+          const closed = rows.filter((r) => (r.status || "pending") !== "pending").slice(0, 12);
+          const card = (r) => `<div class="card" data-id="${esc(r.id)}"><b>${esc(r.subject || "No subject")}<span class="tag">${esc(r.account_label || r.account || "inbox")}</span><span class="tag ${r.status === "pending" ? "amber" : "green"}">${esc(r.status || "pending")}</span></b>
+            <p>${esc(r.from || "")}</p><p>${esc(r.excerpt || "No excerpt available from metadata.")}</p><p class="muted">${esc(r.reason || "Possible reply needed")}</p>
+            <textarea data-draft style="width:100%;min-height:120px;margin-top:10px;background:rgba(255,255,255,.05);border:1px solid var(--border-soft);border-radius:8px;color:var(--text);padding:10px;font:inherit">${esc(r.draft || "")}</textarea>
+            ${sourceLine(r, "gog gmail search --gmail-no-send")}
+            ${r.status === "pending" ? `<div class="row"><button data-email-act="approve">Approve draft</button><button class="ghost-btn" data-email-act="edit">Stage edited</button><button class="reject" data-email-act="deny">Deny</button></div>` : ""}</div>`;
+          return `<div class="notice-metrics"><div class="notice-metric"><span>Pending</span><strong>${pending.length}</strong></div><div class="notice-metric"><span>Closed</span><strong>${closed.length}</strong></div></div><div class="sec">Likely needs reply</div><div class="grid">${pending.map(card).join("") || '<p class="muted">Reply queue is clear.</p>'}</div>${closed.length ? `<div class="sec">Recently decided</div><div class="grid">${closed.map(card).join("")}</div>` : ""}`;
+        },
+        wire() {
+          root.querySelectorAll("[data-email-act]").forEach((btn) => btn.addEventListener("click", async () => {
+            const card = btn.closest("[data-id]");
+            const id = card?.dataset.id;
+            if (!id) return;
+            btn.disabled = true;
+            const draft = card.querySelector("[data-draft]")?.value || "";
+            const decision = btn.dataset.emailAct === "deny" ? "deny" : btn.dataset.emailAct;
+            try { await j("/api/joy-home/email-reply/decide", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, decision, draft }) }); } catch (e) {}
+            load();
+          }));
+        },
+      },
+      skill_review_queue: {
+        title: "Skill Review Queue", icon: "<>" , key: "skill_review_queue", sub: "Governed Skill Workshop proposals",
+        async data() {
+          let live = null;
+          try { live = await j("/api/joy-home/skill-review?ts=" + Date.now()); } catch (e) { live = { ok: false, error: e.message }; }
+          if (live?.ok) return live.proposals;
+          const panel = await j("/api/panels/skill_review_queue?ts=" + Date.now());
+          return Array.isArray(panel?.data) ? panel.data : { error: live?.error || panel?.note || "Skill Workshop queue unavailable" };
+        },
+        render(rows) {
+          if (rows && !Array.isArray(rows)) return `<div class="empty"><b>Skill Review unavailable</b><p>${esc(rows.error || "Joy could not read Skill Workshop right now.")}</p></div>`;
+          if (!Array.isArray(rows) || !rows.length) return null;
+          const pending = rows.filter((r) => (r.status || "pending") === "pending");
+          const recent = rows.filter((r) => (r.status || "pending") !== "pending").slice(0, 12);
+          const card = (r) => {
+            const pendingRow = (r.status || "pending") === "pending";
+            return `<div class="card" data-id="${esc(r.id)}"><b>${esc(r.title || r.id)}<span class="tag">${esc(r.kind || "proposal")}</span><span class="tag ${r.scan_state === "clean" ? "green" : "amber"}">${esc(r.scan_state || "unknown")}</span><span class="tag ${pendingRow ? "amber" : "green"}">${esc(r.status || "pending")}</span></b><p>${esc(r.description || "")}</p>${sourceLine(r, "Skill Workshop live list")}${pendingRow ? `<div class="row"><button data-skill-act="approve">Apply proposal</button><button class="ghost-btn" data-skill-act="reject">Reject</button><button class="reject" data-skill-act="quarantine">Quarantine</button></div><p class="muted">Decisions run through OpenClaw Skill Workshop and require explicit confirmation here.</p>` : ""}</div>`;
+          };
+          return `<div class="notice-metrics"><div class="notice-metric"><span>Pending</span><strong>${pending.length}</strong></div><div class="notice-metric"><span>Recent decided</span><strong>${recent.length}</strong></div></div><div class="sec">Pending proposals</div><div class="grid">${pending.map(card).join("") || '<p class="muted">No pending Skill Workshop proposals.</p>'}</div>${recent.length ? `<div class="sec">Recently decided</div><div class="grid">${recent.map(card).join("")}</div>` : ""}`;
+        },
+        wire() {
+          root.querySelectorAll("[data-skill-act]").forEach((btn) => btn.addEventListener("click", async () => {
+            const card = btn.closest("[data-id]");
+            const id = card?.dataset.id;
+            const decision = btn.dataset.skillAct;
+            if (!id || !decision) return;
+            const verb = decision === "approve" ? "apply" : decision;
+            const ok = window.confirm(`Confirm Skill Workshop ${verb} for proposal ${id}? This changes proposal lifecycle state.`);
+            if (!ok) return;
+            btn.disabled = true;
+            try {
+              await j("/api/joy-home/skill-review/decide", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, decision, reason: "decided from Joy Command Center" }) });
+            } catch (e) {
+              window.alert(`Skill Workshop decision failed: ${e.message}`);
+            }
+            load();
+          }));
+        },
+      },
+      active_work: {
+        title: "Active Work", icon: "..", key: "active_work", sub: "Visible sessions, tasks, and blockers",
+        async data() { return (await j("/api/panels/active_work")).data; },
+        render(rows) { if (!Array.isArray(rows) || !rows.length) return null; return `<div class="grid">${rows.map((w) => `<div class="card"><b>${esc(w.label || w.id)}<span class="tag ${w.status === "running" ? "green" : "amber"}">${esc(w.status || "open")}</span></b><p>${esc(w.owner || "Joy")}${w.blocker ? ` · ${esc(w.blocker)}` : ""}</p>${sourceLine(w, "openclaw sessions + task cards")}</div>`).join("")}</div>`; },
+      },
+      automation_health: {
+        title: "Automation Health", icon: "o", key: "automation_health", sub: "Keep, fix, or retire",
+        async data() { return (await j("/api/panels/automation_health")).data; },
+        render(rows) { if (!Array.isArray(rows) || !rows.length) return null; const order = { fix: 0, keep: 1, retire: 2 }; rows = [...rows].sort((a,b)=>(order[a.classification]??9)-(order[b.classification]??9)); return `<div class="grid">${rows.map((a) => `<div class="card"><b>${esc(a.name)}<span class="tag ${a.classification === "keep" ? "green" : a.classification === "fix" ? "amber" : "muted"}">${esc(a.classification)}</span><span class="tag">${esc(a.status || "unknown")}</span></b><p>${(a.recent_failures || []).length ? esc(a.recent_failures.join("; ")) : "No recent failure recorded."}</p>${sourceLine(a, "openclaw cron + runtime state")}</div>`).join("")}</div>`; },
+      },
+      general_approvals: {
+        title: "General Approvals", icon: "ok", key: "general_approvals", sub: "Outstanding Joy approval requests",
+        async data() { const p = (await j("/api/panels/general_approvals")).data; const local = (await j("/api/approvals?status=pending")).approvals || []; return [...(Array.isArray(p)?p:[]), ...local.filter((a) => !["draft"].includes(a.kind || ""))]; },
+        render(rows) { if (!Array.isArray(rows) || !rows.length) return null; return `<div class="grid">${rows.map((a) => `<div class="card" data-id="${esc(a.id)}"><b>${esc(a.title || a.id)}<span class="tag">${esc(a.kind || "approval")}</span></b><p>${esc(a.detail || "")}</p>${sourceLine(a, "joyctl approvals + dashboard approvals")}<div class="row"><button data-general-act="approve">Approve</button><button class="reject" data-general-act="reject">Reject</button></div></div>`).join("")}</div>`; },
+        wire() {
+          root.querySelectorAll("[data-general-act]").forEach((btn) => btn.addEventListener("click", async () => {
+            const card = btn.closest("[data-id]");
+            const id = card?.dataset.id;
+            if (!id) return;
+            const status = document.getElementById("approvalDecisionStatus");
+            const buttons = card.querySelectorAll("[data-general-act]");
+            buttons.forEach((button) => { button.disabled = true; });
+            status.textContent = "Recording decision…";
+            try {
+              const result = await j(`/api/joy-home/${btn.dataset.generalAct}`, {
+                method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id })
+              });
+              await load();
+              status.textContent = result.copy || "Decision recorded.";
+            } catch (error) {
+              status.textContent = "Decision failed: " + error.message;
+              buttons.forEach((button) => { button.disabled = false; });
+            }
+          }));
+        },
+      },
+      tasks: {
+        title: "Tasks", icon: "⌘", key: "tasks", sub: "Joy's mission board",
+        async data() { return (await j("/api/panels/tasks")).data; },
+        render(board) {
+          const cols = [["progress", "In progress", "green"], ["backlog", "Backlog", ""], ["done", "Done", ""]];
+          const has = board && cols.some(([k]) => (board[k] || []).length);
+          if (!has) return null;
+          return `<div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(230px,1fr));align-items:start">${cols.map(([k, label, tone]) => {
+            const items = board[k] || [];
+            return `<div><div class="sec" style="margin-top:0">${label} · ${items.length}</div>
+              ${items.map((row) => `<div class="card" style="margin-bottom:10px;padding:12px 15px"><p style="color:var(--text)">${esc(Array.isArray(row) ? row[0] : row.title || row)}</p></div>`).join("") || '<p class="muted" style="font-size:0.8rem">—</p>'}</div>`;
+          }).join("")}</div>`;
+        },
+      },
+      calendar: {
+        title: "Calendar", icon: "◷", key: "calendar", sub: "This week, both calendars — new events enter Review first",
+        async data() { return (await j("/api/panels/calendar")).data; },
+        blurb: "Calendar data is live from both accounts. New events are queued in Review and reach Google only after explicit approval.",
+        render(cal) {
+          const now = Date.now();
+          const events = Array.isArray(cal) ? cal : [];
+          const item = (ev) => {
+            const endMs = Date.parse(ev.end || ev.start || "");
+            const startMs = Date.parse(ev.start || "");
+            const past = Number.isFinite(endMs) && endMs < now;
+            const current = !past && Number.isFinite(startMs) && startMs <= now;
+            const span = ev.start_time ? ev.start_time + (ev.end_time && ev.end_time !== ev.start_time ? " – " + ev.end_time : "") : when(ev.start);
+            return `<div class="tl-item${past ? " past" : ""}${current ? " now" : ""}">
+              <span class="t">${ev.all_day ? "All day" : esc(span)}</span>
+              <span><span class="tl-title">${esc(ev.title || ev.summary || "Event")}</span>
+                ${current ? ' <span class="tag green">now</span>' : ""}
+                ${ev.location ? ` <span class="muted">· ${esc(ev.location)}</span>` : ""}
+                ${ev.calendar ? ` <span class="tag">${esc(String(ev.calendar).includes("umich") ? "school" : "personal")}</span>` : ""}</span></div>`;
+          };
+          // Group the week by day.
+          const dayKey = (ev) => String(ev.start || "").slice(0, 10);
+          const groups = new Map();
+          for (const ev of events) {
+            const k = dayKey(ev);
+            if (!groups.has(k)) groups.set(k, []);
+            groups.get(k).push(ev);
+          }
+          const todayIso = new Date().toLocaleDateString("sv");
+          const tomorrowIso = new Date(Date.now() + 864e5).toLocaleDateString("sv");
+          const dayLabel = (k) => {
+            if (k === todayIso) return "Today";
+            if (k === tomorrowIso) return "Tomorrow";
+            const d = new Date(k + "T12:00:00");
+            return Number.isFinite(d.getTime()) ? d.toLocaleDateString([], { weekday: "long", month: "short", day: "numeric" }) : k;
+          };
+          let html = "";
+          for (const k of [...groups.keys()].sort()) {
+            html += `<div class="sec">${esc(dayLabel(k))}</div><div class="tl">${groups.get(k).map(item).join("")}</div>`;
+          }
+          if (!events.length) html = `<p class="muted">Nothing on either calendar this week.</p>`;
+          html += `
+          <div class="card" style="max-width:760px;margin-top:20px;padding:16px 18px">
+            <div class="sec" style="margin-top:0">Request a Google Calendar event</div>
+            <form id="calAdd" style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr auto;gap:8px;align-items:end">
+              <label style="display:flex;flex-direction:column;font-size:0.72rem;color:var(--ink-3);gap:4px">Title
+                <input name="title" required placeholder="Event title" style="background:rgba(255,255,255,0.05);border:1px solid var(--line);border-radius:8px;padding:8px 10px;color:var(--text)"></label>
+              <label style="display:flex;flex-direction:column;font-size:0.72rem;color:var(--ink-3);gap:4px">Date
+                <input name="date" type="date" required style="background:rgba(255,255,255,0.05);border:1px solid var(--line);border-radius:8px;padding:7px 8px;color:var(--text)"></label>
+              <label style="display:flex;flex-direction:column;font-size:0.72rem;color:var(--ink-3);gap:4px">Start
+                <input name="stime" type="time" style="background:rgba(255,255,255,0.05);border:1px solid var(--line);border-radius:8px;padding:7px 8px;color:var(--text)"></label>
+              <label style="display:flex;flex-direction:column;font-size:0.72rem;color:var(--ink-3);gap:4px">End
+                <input name="etime" type="time" style="background:rgba(255,255,255,0.05);border:1px solid var(--line);border-radius:8px;padding:7px 8px;color:var(--text)"></label>
+              <label style="display:flex;flex-direction:column;font-size:0.72rem;color:var(--ink-3);gap:4px">Calendar
+                <select name="account" style="background:rgba(255,255,255,0.05);border:1px solid var(--line);border-radius:8px;padding:8px;color:var(--text)">
+                  <option value="personal">Personal</option><option value="school">School</option>
+                </select></label>
+              <button type="submit" class="ghost-btn" style="padding:9px 16px">Queue for review</button>
+            </form>
+            <p id="calAddNote" class="muted" style="font-size:0.75rem;margin-top:8px">No start time = all-day event. Nothing is written until you approve it in Review.</p>
+          </div>`;
+          return html;
+        },
+        wire() {
+          const form = document.getElementById("calAdd");
+          if (!form) return;
+          const dateInput = form.querySelector('[name="date"]');
+          if (dateInput && !dateInput.value) dateInput.value = new Date().toLocaleDateString("sv");
+          form.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const note = document.getElementById("calAddNote");
+            const f = new FormData(form);
+            const date = f.get("date"), stime = f.get("stime"), etime = f.get("etime");
+            const body = { title: f.get("title"), account: f.get("account") };
+            if (stime) {
+              body.start = new Date(`${date}T${stime}`).toISOString();
+              const endLocal = etime ? new Date(`${date}T${etime}`) : new Date(Date.parse(body.start) + 36e5);
+              body.end = endLocal.toISOString();
+            } else {
+              body.start = date;
+              body.all_day = true;
+            }
+            note.textContent = "Queuing for Review…";
+            try {
+              const res = await j("/api/calendar/add", { method: "POST",
+                headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+              note.textContent = res.queued ? "Queued in Review ✓" : (res.error || "Failed");
+              if (res.queued) form.reset();
+            } catch (err) {
+              note.textContent = "Failed: " + err.message;
+            }
+          });
+        },
+      },
+      notifications: {
+        title: "Notifications", icon: "!", key: "notifications", sub: "Alerts, email follow-ups, and anything Joy thinks needs your eyes",
+        async data() { return (await j("/api/panels/notifications")).data; },
+        blurb: "Push a list of notification objects. Use status new/open/following_up/waiting/done/dismissed and priority urgent/high/normal/low. The dashboard never sends email itself; Follow up queues a message for Joy.",
+        render(items) {
+          if (!Array.isArray(items) || !items.length) return null;
+          const terminal = new Set(["reviewed", "done", "dismissed", "archived"]);
+          const priorityRank = { critical: 0, urgent: 0, high: 1, normal: 2, low: 3 };
+          const normalized = items.map((n, idx) => ({
+            ...n,
+            _idx: idx,
+            id: n.id || n.thread_id || n.url || `notification-${idx}`,
+            kind: String(n.kind || "alert").toLowerCase(),
+            source: String(n.source || n.account || "joy"),
+            priority: String(n.priority || "normal").toLowerCase(),
+            status: String(n.status || "new").toLowerCase(),
+          })).sort((a, b) => {
+            const pa = priorityRank[a.priority] ?? 2;
+            const pb = priorityRank[b.priority] ?? 2;
+            if (pa !== pb) return pa - pb;
+            return Date.parse(b.received_at || b.updated_at || b.due_at || 0) - Date.parse(a.received_at || a.updated_at || a.due_at || 0);
+          });
+          const open = normalized.filter((n) => !terminal.has(n.status));
+          const urgent = open.filter((n) => ["critical", "urgent", "high"].includes(n.priority));
+          const follow = open.filter((n) => ["following_up", "waiting"].includes(n.status) || n.due_at);
+          const done = normalized.filter((n) => terminal.has(n.status)).slice(0, 8);
+          const sourceCount = new Set(open.map((n) => n.source)).size;
+          const tagTone = (n) => ["critical", "urgent"].includes(n.priority) ? "red" : n.priority === "high" ? "amber" : n.status === "done" ? "green" : "muted";
+          const timeLabel = (iso) => {
+            const d = new Date(iso || "");
+            if (!Number.isFinite(d.getTime())) return "";
+            return d.toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+          };
+          const card = (n) => {
+            const prompt = n.follow_up_prompt || `Check this ${n.kind} notification and tell me the best follow-up: ${n.title || "Untitled"}`;
+            return `<div class="card notice-card" data-id="${esc(n.id)}" data-priority="${esc(n.priority)}">
+              <div class="notice-stripe" aria-hidden="true"></div>
+              <div class="notice-body">
+                <div class="notice-top">
+                  <div class="notice-title">
+                    <b>${esc(n.title || "Untitled notification")}</b>
+                    <span class="tag ${tagTone(n)}">${esc(n.priority)}</span>
+                    <span class="tag">${esc(n.kind)}</span>
+                    <span class="tag muted">${esc(n.status)}</span>
+                  </div>
+                  ${n.received_at || n.updated_at ? `<time>${esc(timeLabel(n.received_at || n.updated_at))}</time>` : ""}
+                </div>
+                <p>${esc(n.body || n.snippet || n.summary || "")}</p>
+                <div class="notice-meta">
+                  ${n.from ? `<span>from ${esc(n.from)}</span>` : ""}
+                  ${n.account ? `<span>${esc(n.account)}</span>` : ""}
+                  ${n.source ? `<span>${esc(n.source)}</span>` : ""}
+                  ${n.due_at ? `<span class="tag amber">due ${esc(timeLabel(n.due_at))}</span>` : ""}
+                </div>
+                <div class="notice-actions">
+                  <button type="button" data-notice-act="follow" data-prompt="${esc(prompt)}">Ask Joy to follow up</button>
+                  <button type="button" class="ghost-btn" data-notice-act="reviewed">Reviewed</button>
+                  <button type="button" class="ghost-btn" data-notice-act="done">Done</button>
+                  ${n.url ? `<a href="${esc(n.url)}" target="_blank" rel="noopener"><button type="button" class="ghost-btn">Open source</button></a>` : ""}
+                </div>
+              </div>
+            </div>`;
+          };
+          const section = (label, group) => group.length ? `<div class="sec">${label} · ${group.length}</div><div class="notice-list">${group.map(card).join("")}</div>` : "";
+          const main = open.filter((n) => !["following_up", "waiting"].includes(n.status));
+          return `<div class="notice-shell">
+            <div class="notice-metrics">
+              <div class="notice-metric"><span>Open</span><strong>${open.length}</strong></div>
+              <div class="notice-metric"><span>High priority</span><strong>${urgent.length}</strong></div>
+              <div class="notice-metric"><span>Follow-up</span><strong>${follow.length}</strong></div>
+              <div class="notice-metric"><span>Sources</span><strong>${sourceCount}</strong></div>
+            </div>
+            ${section("Needs attention", main)}
+            ${section("Follow-up queue", follow.filter((n) => !main.includes(n)))}
+            ${section("Recently cleared", done)}
+          </div>`;
+        },
+        wire() {
+          const updateStatus = async (id, status) => {
+            const rows = Array.isArray(currentData) ? currentData : [];
+            const next = rows.map((n, idx) => {
+              const rowId = n.id || n.thread_id || n.url || `notification-${idx}`;
+              return String(rowId) === String(id)
+                ? { ...n, id: rowId, status, reviewed_at: new Date().toISOString() }
+                : n;
+            });
+            await j("/api/panels/notifications", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ data: next, source: "dashboard" }),
+            });
+          };
+          root.querySelectorAll("[data-notice-act]").forEach((btn) => {
+            btn.addEventListener("click", async () => {
+              const card = btn.closest("[data-id]");
+              const id = card?.dataset.id;
+              if (!id) return;
+              btn.disabled = true;
+              try {
+                if (btn.dataset.noticeAct === "follow") {
+                  await j("/api/joy-home/openclaw/send", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ message: btn.dataset.prompt || "Follow up on this notification." }),
+                  });
+                  await updateStatus(id, "following_up");
+                } else if (btn.dataset.noticeAct === "reviewed") {
+                  await updateStatus(id, "reviewed");
+                } else if (btn.dataset.noticeAct === "done") {
+                  await updateStatus(id, "done");
+                }
+              } catch (_) {
+                btn.disabled = false;
+                return;
+              }
+              load();
+            });
+          });
+        },
+      },
+      projects: {
+        title: "Projects", icon: "▦", key: "projects", sub: "What's being built",
+        async data() { return j("/api/projects"); },
+        render(projects) {
+          if (!Array.isArray(projects) || !projects.length) return null;
+          return `<div class="grid">${projects.map((p) => {
+            const active = String(p.status || "").toLowerCase() === "active";
+            const prog = Number(p.progress);
+            return `<div class="card"><b>${esc(p.name || "Untitled")}<span class="tag ${active ? "green" : "amber"}">${esc(p.status || "—")}</span></b>
+              <p>${esc(p.description || p.desc || "")}</p>
+              ${Number.isFinite(prog) ? `<div style="display:flex;align-items:center;gap:10px;margin-top:12px"><span class="bar-track"><span class="bar-fill" style="width:${Math.min(100, Math.max(2, prog))}%"></span></span><span class="muted" style="font-size:0.75rem">${prog}%</span></div>` : ""}
+              ${p.owner ? `<time>${esc(p.owner)}</time>` : ""}</div>`;
+          }).join("")}</div>`;
+        },
+      },
+      approvals: {
+        title: "Review queue", icon: "◇", key: null, sub: "Everything waiting on you",
+        async data() { return (await j("/api/approvals?status=all")).approvals; },
+        endpoint: "/api/approvals",
+        blurb: "kinds: approval · draft · pr · decision. Poll /api/approvals?status=decided for friend's answers.",
+        render(items) {
+          if (!Array.isArray(items) || !items.length) return null;
+          const pending = items.filter((a) => a.status === "pending");
+          const decided = items.filter((a) => a.status !== "pending").slice(-12).reverse();
+          const KINDS = [["approval", "Needs approval"], ["draft", "Drafts to review"], ["pr", "Pull requests"], ["decision", "Decisions"]];
+          const cardFor = (a) => `
+            <div class="card" data-id="${esc(a.id)}"><b>${esc(a.title)}${a.source && a.source !== "joy" ? `<span class="tag">${esc(a.source)}</span>` : ""}</b>
+              <p>${esc(a.detail || "")}</p>
+              <div class="row">
+                <button data-act="approve">${a.kind === "draft" ? "Looks good" : "Approve"}</button>
+                <button class="reject" data-act="reject">${a.kind === "draft" ? "Redo" : "Reject"}</button>
+                ${a.url ? `<a href="${esc(a.url)}" target="_blank" rel="noopener"><button type="button" class="ghost-btn">Open ↗</button></a>` : ""}
+              </div></div>`;
+          let html = "";
+          for (const [kind, label] of KINDS) {
+            const group = pending.filter((a) => (a.kind || "approval") === kind);
+            if (!group.length) continue;
+            html += `<div class="sec">${label} · ${group.length}</div><div class="grid">${group.map(cardFor).join("")}</div>`;
+          }
+          if (!html) html = '<p class="muted">Nothing pending — you\'re clear.</p>';
+          if (decided.length) {
+            html += `<div class="sec">Recent decisions</div>
+              <ul class="plain">${decided.map((a) => `<li><span class="t">${esc(when(a.decided_at))}</span><span>${esc(a.title)} <span class="tag ${a.status === "approved" ? "green" : "amber"}">${esc(a.status)}</span></span></li>`).join("")}</ul>`;
+          }
+          return html;
+        },
+        wire() {
+          root.querySelectorAll("[data-act]").forEach((btn) => {
+            btn.addEventListener("click", async () => {
+              const id = btn.closest("[data-id]")?.dataset.id;
+              if (!id) return;
+              btn.disabled = true;
+              try {
+                await j(`/api/joy-home/${btn.dataset.act}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id }) });
+              } catch (_) {}
+              load();
+            });
+          });
+        },
+      },
+      agents: {
+        title: "Agents", icon: "☷", key: "agents", sub: "Joy's network, right now",
+        async data() { return (await j("/api/panels/agents")).data; },
+        render(agents) {
+          if (!Array.isArray(agents) || !agents.length) return null;
+          return `<div class="grid">${agents.map((a) => {
+            const active = a.status === "active";
+            return `<div class="card"><b><span class="fresh ${active ? "live" : ""}" style="margin:0;padding:3px 10px"><span class="dot"></span>${esc(a.name || "agent")}</span><span class="tag ${active ? "green" : ""}">${esc(a.status || "idle")}</span></b>
+              <p>${esc(a.task || "nothing assigned")}</p></div>`;
+          }).join("")}</div>`;
+        },
+      },
+      memory: {
+        title: "Memory", icon: "♧", key: "memory", sub: "What Joy is keeping in mind",
+        async data() { return (await j("/api/panels/memory")).data; },
+        render(mem) {
+          if (!Array.isArray(mem) || !mem.length) return null;
+          return `<div class="grid">${mem.map((m) => `
+            <div class="card"><b>${esc(m.title || "Memory")}</b><p>${esc(m.body || m.text || "")}</p>
+            ${m.date ? `<time>${esc(m.date)}</time>` : ""}</div>`).join("")}</div>`;
+        },
+      },
+      diary: {
+        title: "Joy's diary", icon: "✼", key: "diary", sub: "Her own words, newest first",
+        async data() {
+          const entries = (await j("/api/panels/diary")).data;
+          if (Array.isArray(entries) && entries.length) return entries;
+          const inner = (await j("/api/panels/inner")).data;
+          return inner?.diary?.entry ? [inner.diary] : null;
+        },
+        render(entries) {
+          if (!Array.isArray(entries) || !entries.length) return null;
+          return entries.map((d) => `
+            <div class="card" style="margin-bottom:14px;max-width:720px">
+              <b>${esc(d.date || "")}${d.mood ? `<span class="tag">${esc(d.mood)}</span>` : ""}</b>
+              <p class="diary">${esc(d.entry || d.text || "")}</p>
+            </div>`).join("");
+        },
+      },
+      garden: {
+        title: "Joy's garden", icon: "❋", key: "garden", sub: "Qualities she's growing",
+        async data() {
+          const plants = (await j("/api/panels/garden")).data;
+          const inner = (await j("/api/panels/inner")).data;
+          return { plants: Array.isArray(plants) && plants.length ? plants : (inner?.garden || []), flourishing: inner?.flourishing };
+        },
+        isEmpty(d) { return !d || !d.plants.length; },
+        render(d) {
+          if (!d || !d.plants.length) return null;
+          const STAGES = ["seed", "sprouting", "budding", "in bloom", "fruiting", "resting"];
+          let html = "";
+          if (d.flourishing && (d.flourishing.score != null || d.flourishing.note)) {
+            html += `<div class="card" style="margin-bottom:16px;max-width:720px"><b>Flourishing${d.flourishing.score != null ? `<span class="tag green">${esc(d.flourishing.score)}/10</span>` : ""}</b>
+              <p>${esc(d.flourishing.note || "")}</p></div>`;
+          }
+          html += `<div class="grid">${d.plants.map((p) => {
+            const idx = STAGES.indexOf(String(p.stage || "").toLowerCase());
+            const dots = STAGES.map((_, i) => (idx >= 0 && i <= idx ? "●" : "○")).join(" ");
+            return `<div class="card"><b>${esc(p.name || "seed")}<span class="tag green">${esc(p.stage || "?")}</span></b>
+              ${idx >= 0 ? `<div class="stages">${dots}</div>` : ""}
+              <p>${esc(p.note || "")}</p>
+              ${p.planted ? `<time>planted ${esc(p.planted)}</time>` : ""}</div>`;
+          }).join("")}</div>`;
+          return html;
+        },
+      },
+      usage: {
+        title: "Usage", icon: "◉", key: "usage", sub: "Tokens & spend across the agent team",
+        async data() {
+          const [ledger, provider] = await Promise.all([
+            j("/api/panels/usage").catch(() => ({ data: [] })),
+            j("/api/joy-home/openclaw/usage").catch((error) => ({ ok: false, error: error.message, providers: [] })),
+          ]);
+          return { rows: Array.isArray(ledger.data) ? ledger.data : [], provider };
+        },
+        isEmpty(d) { return !d || (!d.rows?.length && !d.provider?.providers?.length && !d.provider?.modelUsage?.providers?.length && !d.provider?.services?.length && !d.provider?.error); },
+        render(d) {
+          const rows = d?.rows || [];
+          const provider = d?.provider || {};
+          const today = new Date().toISOString().slice(0, 10);
+          const byAgent = {};
+          let todayCost = 0, weekCost = 0;
+          const weekAgo = Date.now() - 7 * 86400e3;
+          for (const r of rows) {
+            const cost = Number(r.cost) || 0;
+            const t = Date.parse(r.date || "");
+            if (r.date === today) {
+              todayCost += cost;
+              const a = (byAgent[r.agent || "?"] ||= { cost: 0, tokens: 0 });
+              a.cost += cost;
+              a.tokens += (Number(r.tokens_in) || 0) + (Number(r.tokens_out) || 0);
+            }
+            if (Number.isFinite(t) && t >= weekAgo) weekCost += cost;
+          }
+          const maxCost = Math.max(...Object.values(byAgent).map((a) => a.cost), 0.01);
+          let html = "";
+          const liveModels = provider.modelUsage || {};
+          if ((liveModels.providers || []).length) {
+            html += `<div class="sec" style="margin-top:0">Models · live from OpenClaw logs</div><div style="display:grid;grid-template-columns:1fr;gap:12px">${liveModels.providers.map((p) => {
+              const rows = (p.models || []).map((m) => {
+                const active = Number(m.today?.calls || 0) > 0;
+                const cost = Number(m.today?.cost || 0);
+                return `<div style="display:grid;grid-template-columns:minmax(130px,1.6fr) repeat(3,minmax(72px,.7fr));gap:8px;padding:7px 0;border-top:1px solid var(--line);align-items:center;opacity:${active ? 1 : .55}">
+                  <span><b>${esc(m.model)}</b>${active ? ' <span class="tag green">live</span>' : ''}</span>
+                  <span class="muted"><b>${fmtTok(m.today?.tokens || 0)}</b> today<br>${m.today?.calls || 0} calls${cost ? ` · $${cost.toFixed(3)}` : ''}</span>
+                  <span class="muted"><b>${fmtTok(m.week?.tokens || 0)}</b> 7d<br>${m.week?.calls || 0} calls</span>
+                  <span class="muted"><b>${fmtTok(m.month?.tokens || 0)}</b> 30d<br>${m.month?.calls || 0} calls</span>
+                </div>`;
+              }).join("");
+              return `<div class="card" style="min-width:0"><b>${esc(p.displayName || p.provider)}</b><span class="tag">${(p.models || []).length} models</span>${rows}</div>`;
+            }).join("")}</div>`;
+          } else if (liveModels.refreshing) {
+            html += `<div class="card"><b>Refreshing live model usage…</b><p>Canonical session logs are being indexed in the background.</p></div>`;
+          }
+          if ((provider.services || []).length || provider.servicesRefreshing) {
+            html += `<div class="sec">Voice & service allowances</div><div class="grid">${(provider.services || []).map((svc) => {
+              const used = Number(svc.used || 0), limit = Number(svc.limit || 0);
+              const pct = limit ? Math.min(100, used / limit * 100) : 0;
+              const reset = svc.resetAt ? ` · resets ${new Date(Number(svc.resetAt) * 1000).toLocaleString([], { month: "short", day: "numeric" })}` : "";
+              return `<div class="card"><b>${esc(svc.displayName || svc.provider)}</b>${svc.plan ? `<span class="tag">${esc(svc.plan)}</span>` : ""}${svc.error ? `<p class="muted">${esc(svc.error)}</p>` : `<p>${used.toLocaleString()} / ${limit.toLocaleString()} ${esc(svc.unit || "units")}${esc(reset)}</p><div class="bar-track" style="width:100%"><span class="bar-fill" style="width:${pct}%"></span></div>`}</div>`;
+            }).join("")}${provider.servicesRefreshing && !(provider.services || []).length ? '<div class="card">Refreshing ElevenLabs allowance…</div>' : ''}</div>`;
+          }
+          if ((provider.providers || []).length) {
+            html += `<div class="sec" style="margin-top:0">Provider limits · live</div><div class="grid">${provider.providers.map((p) => {
+              const windows = (p.windows || []).map((w) => {
+                const left = Math.max(0, Math.min(100, 100 - Number(w.usedPercent || 0)));
+                const reset = w.resetAt ? ` · resets ${new Date(w.resetAt).toLocaleString([], { weekday: "short", hour: "numeric", minute: "2-digit" })}` : "";
+                return `<div style="margin-top:10px"><div class="row" style="justify-content:space-between"><span>${esc(w.label)}</span><span class="muted">${left.toFixed(0)}% left${esc(reset)}</span></div><div class="bar-track" style="width:100%;margin-top:5px"><span class="bar-fill" style="width:${left}%"></span></div></div>`;
+              }).join("");
+              return `<div class="card"><b>${esc(p.displayName || p.provider)}${p.plan ? `<span class="tag">${esc(p.plan)}</span>` : ""}</b>${p.summary ? `<p>${esc(p.summary)}</p>` : ""}${windows}${p.error ? `<p class="muted">${esc(p.error)}</p>` : ""}</div>`;
+            }).join("")}</div>`;
+          } else if (provider.error) {
+            html += `<div class="card"><b>Provider limits unavailable</b><p>${esc(provider.error)}</p></div>`;
+          }
+          html += `<div class="sec">Local cost ledger</div><div class="tiles">
+            <div class="tile"><div class="k">Today</div><div class="v">$${todayCost.toFixed(2)}</div></div>
+            <div class="tile"><div class="k">Last 7 days</div><div class="v">$${weekCost.toFixed(2)}</div></div>
+            <div class="tile"><div class="k">Agents today</div><div class="v">${Object.keys(byAgent).length}</div></div>
+          </div>`;
+          if (Object.keys(byAgent).length) {
+            html += `<div class="sec">Today by agent</div>
+              <ul class="plain">${Object.entries(byAgent).sort((a, b) => b[1].cost - a[1].cost).map(([agent, a]) => `
+                <li><span class="t">${esc(agent)}</span>
+                  <span class="bar-track"><span class="bar-fill" style="width:${Math.max(3, Math.round((a.cost / maxCost) * 100))}%"></span></span>
+                  <span class="muted" style="min-width:130px;text-align:right">$${a.cost.toFixed(2)} · ${fmtTok(a.tokens)} tok</span></li>`).join("")}</ul>`;
+          }
+          const recent = rows.slice(-14).reverse();
+          html += `<div class="sec">Recent entries</div>
+            <ul class="plain">${recent.map((r) => `
+              <li><span class="t">${esc(r.date || "")}</span>
+                <span>${esc(r.agent || "?")}${r.model ? ` <span class="muted">· ${esc(r.model)}</span>` : ""}</span>
+                <span class="muted" style="margin-left:auto">$${(Number(r.cost) || 0).toFixed(2)} · ${fmtTok((Number(r.tokens_in) || 0) + (Number(r.tokens_out) || 0))} tok</span></li>`).join("")}</ul>`;
+          return html;
+        },
+      },
+    };
+    VIEWS.joy = VIEWS.garden;
+
+    /* ------------------------------ engine ----------------------------- */
+    const view = VIEWS[page] || VIEWS.tasks;
+    let stateSections = null;
+    let currentData = null;
+
+    function setFreshness() {
+      const el = document.getElementById("fresh");
+      const txt = document.getElementById("freshText");
+      if (!view.key || !stateSections) { el.hidden = true; return; }
+      const meta = stateSections[view.key];
+      el.hidden = false;
+      el.classList.remove("live", "stale");
+      if (!meta) { txt.textContent = "never pushed"; el.classList.add("stale"); return; }
+      const mins = Math.round((meta.age_s || 0) / 60);
+      const age = mins < 1 ? "just now" : mins < 60 ? mins + "m ago" : Math.round(mins / 60) + "h ago";
+      txt.textContent = `${age} · ${meta.source}`;
+      el.classList.add(mins < 45 ? "live" : "stale");
+    }
+
+    async function load() {
+      document.getElementById("title").textContent = view.title;
+      document.getElementById("icon").textContent = view.icon;
+      document.getElementById("sub").textContent = view.sub || "";
+      try {
+        if (!apiDoc) apiDoc = await j("/api/joy").catch(() => null);
+        stateSections = (await j("/api/state").catch(() => null))?.sections;
+        const data = await view.data();
+        currentData = data;
+        const emptyByCheck = view.isEmpty ? view.isEmpty(data) : false;
+        let html = emptyByCheck ? null : view.render(data);
+        if (html == null) {
+          html = `<p class="muted">${page === "general_approvals" ? "No pending local reviews." : "Joy hasn't pushed " + esc(view.title.toLowerCase()) + " yet."}</p>` +
+            plugCard(view.key || page, { endpoint: view.endpoint, blurb: view.blurb });
+        } else {
+          html += plugCard(view.key || page, { endpoint: view.endpoint, blurb: view.blurb, collapsed: true });
+        }
+        root.innerHTML = html;
+        setFreshness();
+        view.wire?.();
+        wireCopy();
+      } catch (err) {
+        root.innerHTML = `<p class="muted">Could not load: ${esc(err.message)}</p>`;
+      }
+    }
+
+    load();
+    setInterval(() => { if (!document.hidden) load(); }, 30000);
+  })();
+  </script>
+</body>
+</html>
