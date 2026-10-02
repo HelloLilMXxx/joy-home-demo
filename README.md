@@ -50,6 +50,6 @@ python3 scripts/check_release.py
 
 This checks real persisted panels, queue/reply correlation, review decisions, rejected executable approvals, traversal rejection and audio multipart byte preservation, without any paid calls. Optional JavaScript syntax checking uses `node --check joy-home/*.js` one file at a time.
 
-See `PROVENANCE.json` for selected source files and transformations. No source git history, personal data, credentials, media assets, diary records, account defaults or internal agent prompts are included. License selection and public publication require the owner's decision. **No new license has been granted by this export.**
+See `PROVENANCE.json` for selected source files and transformations. No source git history, personal data, credentials, media assets, diary records, account defaults or internal agent prompts are included. Publication was approved by the owner; license selection still requires the owner's decision. **No new license has been granted by this export.**
 
-The existing GitHub repositories are private. This candidate is local and has no reviewer-accessible public URL yet. It is ready for owner review as a limited local prototype; publication, hosting and complete live voice readiness remain pending.
+The original GitHub repositories remain private. This sanitized demonstration is published at https://github.com/HelloLilMXxx/joy-home-demo and can be viewed or downloaded without signing in. It runs locally; hosting and complete live voice readiness remain pending.

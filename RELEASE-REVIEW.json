@@ -47,9 +47,13 @@
     "browser": "Home orb, labeled Tasks, Chat queued bridge-not-connected label, local approval receipt verified"
   },
   "blocked_release_claims": [
-    "public URL pending publication approval",
     "license decision pending owner",
     "AI bridge not included",
     "live voice unverified; prior STT attempt failed"
-  ]
+  ],
+  "publication": {
+    "repository": "https://github.com/HelloLilMXxx/joy-home-demo",
+    "scope": "sanitized local demonstration only",
+    "approved": true
+  }
 }
